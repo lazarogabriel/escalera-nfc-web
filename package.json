@@ -1,0 +1,27 @@
+{
+  "name": "escalera-nfc-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "check:content": "node scripts/check-content.mjs",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run check:content && npm run typecheck && vite build",
+    "build:preview": "npm run typecheck && vite build --mode preview",
+    "preview": "vite preview",
+    "update:fallback": "node scripts/update-fallback.mjs",
+    "prepare:card": "node scripts/prepare-card.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/three": "^0.186.0",
+    "sharp": "^0.35.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.3"
+  }
+}

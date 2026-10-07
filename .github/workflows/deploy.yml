@@ -1,0 +1,42 @@
+# Despliegue estático de Vite en GitHub Pages (guía oficial de Vite).
+# Configuración > Pages > Source: "GitHub Actions".
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Los valores de .env.example son públicos (terminan en el navegador).
+      - run: cp .env.example .env
+      # Mientras queden preguntas sin responder se publica la vista previa, con los avisos "Falta responder" visibles.
+      # Cuando no quede ninguno, cambiar a: npm run build (falla si queda algún [[FALTA]]).
+      - run: npm run build:preview
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./dist
+      - id: deployment
+        uses: actions/deploy-pages@v5
