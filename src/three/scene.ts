@@ -216,7 +216,10 @@ function phoneScreenTexture() {
 
 export async function createCardScene({ canvas, reducedMotion, lowPower }: StageOptions): Promise<CardStage> {
   const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  let pixelRatio = Math.min(window.devicePixelRatio, lowPower ? 1.25 : 2);
+  // Celulares: densidad completa de la pantalla (hasta 3), porque a 2 la tarjeta se ve blanda en un iPhone.
+  // Escritorio: hasta 2 (pantallas más grandes, más píxeles por cuadro).
+  const isTouch = matchMedia('(pointer: coarse)').matches;
+  let pixelRatio = Math.min(window.devicePixelRatio, lowPower ? 1.25 : isTouch ? 3 : 2);
   renderer.setPixelRatio(pixelRatio);
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = NeutralToneMapping;
