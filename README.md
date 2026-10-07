@@ -39,7 +39,7 @@ npm run prepare:card
 
 ## Publicar
 
-Cada push a `main` publica con `.github/workflows/deploy.yml`. En GitHub: Settings > Pages > Source: **GitHub Actions**.
+Cada push a `master` publica con `.github/workflows/deploy.yml`. En GitHub: Settings > Pages > Source: **GitHub Actions**.
 
 - Hoy publica `build:preview` (con avisos). Cuando no quede ningún `[[FALTA]]`, cambiar el paso a `npm run build`.
 - Dominio propio: en Settings > Pages > Custom domain, y en el build usar `VITE_BASE=/` (por ejemplo `VITE_BASE=/ npm run build`). Con GitHub Actions no hace falta un archivo `CNAME`.
