@@ -32,8 +32,10 @@ export function canUseWebGL(): boolean {
 }
 
 export function isLowPower(): boolean {
+  // Solo se usa la memoria del equipo (Chrome en Android). No se usa hardwareConcurrency:
+  // Safari en iPhone informa menos núcleos de los reales y un iPhone 15 quedaba como "equipo flojo".
   const nav = navigator as Navigator & { deviceMemory?: number };
-  return (nav.deviceMemory ?? 8) <= 3 || navigator.hardwareConcurrency <= 4;
+  return nav.deviceMemory !== undefined && nav.deviceMemory <= 2;
 }
 
 /** Import dinámico: three.js queda fuera del primer paquete. */

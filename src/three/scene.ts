@@ -482,7 +482,8 @@ export async function createCardScene({ canvas, reducedMotion, lowPower }: Stage
       slowSince = fastSince = 0;
       return;
     }
-    if (delta > 28) {
+    // 40 ms: el iPhone en ahorro de batería anima a 30 fps (33 ms) y eso no es lentitud del equipo.
+    if (delta > 40) {
       fastSince = 0;
       slowSince ||= time;
       if (time - slowSince > 2000 && pixelRatio > minPixelRatio) {
