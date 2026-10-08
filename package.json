@@ -10,6 +10,7 @@
     "build": "npm run check:content && npm run typecheck && vite build",
     "build:preview": "npm run typecheck && vite build --mode preview",
     "build:shopify": "node scripts/build-theme.mjs",
+    "build:logo": "node scripts/build-logo.mjs",
     "preview": "vite preview",
     "update:fallback": "node scripts/update-fallback.mjs",
     "prepare:card": "node scripts/prepare-card.mjs"
