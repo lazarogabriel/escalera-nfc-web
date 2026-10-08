@@ -36,13 +36,12 @@ Todas las preguntas quedaron respondidas el 2026-10-08. Lo único que falta ante
 
 ## Tareas en Shopify (bloquean la publicación)
 
-- Dejar las variantes del producto `tarjetas-nfc` así: **1 tarjeta** $449, **10 tarjetas** $1,590, **30 tarjetas** $4,470, **50 tarjetas** $6,950 y **100 tarjetas** $12,900. Borrar la de 20 tarjetas. El título de cada variante tiene que empezar con el número, porque la página lee de ahí la cantidad. Hoy no existe la de 1 tarjeta, así que "Para mi negocio" aparece como no disponible hasta que se cree.
-- Después de cambiar las variantes, correr `npm run update:fallback` para actualizar el respaldo de precios.
+- ~~Variantes y precios~~ Hecho (2026-10-08): 1 tarjeta $449, 10/30/50/100 tarjetas con los precios del cliente. Respaldo actualizado. Si cambia un precio: `npm run update:fallback`.
 - Corregir el peso de cada variante: 40 g por tarjeta (1 tarjeta 40 g, 10 tarjetas 400 g, 30 tarjetas 1.2 kg, 50 tarjetas 2 kg, 100 tarjetas 4 kg), más el empaque.
 - Configurar el envío gratis a todo México.
 - Activar Shopify Payments con tarjeta de crédito y débito, Apple Pay y Google Pay. Dejar apagados OXXO y los meses sin intereses.
 - Pedir el teléfono como obligatorio en el checkout (Configuración → Checkout → Información de contacto). Sin ese dato no pueden escribirle al comprador por WhatsApp para pedirle el link ni mandarle el rastreo.
-- (PV6) Crear las políticas de reembolso, envío y términos del servicio. Hoy solo existe la de privacidad. Es el único aviso "Falta responder" que queda en la página.
+- (PV6) Crear las políticas de reembolso, envío y términos del servicio en Configuración → Políticas. La página muestra solas las que existan; ya no hay aviso amarillo.
 - Cambiar el nombre de la tienda a "Escalera NFC" (NE1).
 
 ## Dónde ver el link de reseñas de cada pedido

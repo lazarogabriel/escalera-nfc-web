@@ -1,4 +1,4 @@
-// Regenera public/variants.fallback.json desde la Storefront API.
+// Regenera src/shop/variants.fallback.json desde la Storefront API.
 // Uso: npm run update:fallback (lee .env)
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -36,5 +36,5 @@ const out = {
     currencyCode: v.price.currencyCode,
   })),
 };
-writeFileSync(new URL('../public/variants.fallback.json', import.meta.url), JSON.stringify(out, null, 2) + '\n');
+writeFileSync(new URL('../src/shop/variants.fallback.json', import.meta.url), JSON.stringify(out, null, 2) + '\n');
 console.log(`variants.fallback.json: ${out.variants.length} packs (${out.variants.map((v) => `${v.title} $${v.price}`).join(', ')})`);

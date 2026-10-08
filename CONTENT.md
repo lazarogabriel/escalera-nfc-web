@@ -4,7 +4,7 @@ Texto final de la landing, en español de México, de tú. Este documento es la 
 
 ## 0. Convenciones
 
-- `[[FALTA: CÓDIGO pregunta]]` es un dato que falta. En la página se ve como un aviso visible: "Falta responder: pregunta (CÓDIGO)". Los códigos son los de `PREGUNTAS-CLIENTE.md`. Hoy solo queda PV6.
+- `[[FALTA: CÓDIGO pregunta]]` es un dato que falta. En la página se ve como un aviso visible: "Falta responder: pregunta (CÓDIGO)". Los códigos son los de `PREGUNTAS-CLIENTE.md`. Hoy no queda ninguno.
 - `{variable}` se llena con datos de Shopify o del flujo:
   - `{n}`: número de tarjetas. En reventa se lee del título de la variante ("30 tarjetas"); en negocio es lo que eligió con + y −.
   - `{pack}`: "1 tarjeta" o "{n} tarjetas".
@@ -134,7 +134,7 @@ Solo con "Para mi negocio".
 | Envío | Gratis a todo México. | — |
 | Total | {total} MXN | — |
 
-**Pie:** Pago seguro en Shopify. Esta página no ve los datos de tu tarjeta. Íconos: Visa, Mastercard, American Express, Apple Pay, Google Pay.
+**Pie:** Pago seguro en Shopify. Esta página no ve los datos de tu tarjeta. Íconos: Visa, Mastercard, American Express, Apple Pay, Google Pay, y etiquetas de texto Mercado Pago y Transferencia.
 
 **Qué pasa después** (numerada):
 
@@ -153,12 +153,12 @@ Solo con "Para mi negocio".
 
 **Bloques:**
 - **Pagas en Shopify:** El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.
-- **Formas de pago:** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay o Google Pay. Se paga en una sola exhibición, sin meses sin intereses.
+- **Formas de pago:** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay, Mercado Pago o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.
 - **Envío:** Enviamos gratis a todo México, por FedEx o Paquetexpress. Te llegan en 2 a 8 días hábiles. Te mandamos la guía y el número de rastreo por WhatsApp.
 - **Factura:** Por el momento no emitimos factura.
 - **Si una tarjeta falla:** Garantía de 5 años. Si una tarjeta falla, escríbenos por WhatsApp en cuanto lo notes y la resolvemos de inmediato: te la reponemos o te devolvemos tu dinero, y nosotros pagamos el envío.
 
-**Políticas:** Política de privacidad, Política de reembolso, Política de envío, Términos del servicio (`https://{dominio}/policies/...`). Solo se muestran las que existen. `[[FALTA: PV6 Crear en Shopify las políticas de reembolso, envío y términos del servicio]]`
+**Políticas:** Política de privacidad, Política de reembolso, Política de envío, Términos del servicio (`https://{dominio}/policies/...`). Solo se muestran las que existen en Shopify; si no hay ninguna, el bloque no aparece.
 
 **Botón:** Ir a pagar
 **Texto bajo el botón:** Te llevamos al checkout de Shopify. Ahí pones tu dirección de entrega.
@@ -202,7 +202,7 @@ Solo con "Para mi negocio".
 5. **¿Dónde consigo mi link de reseñas?** En tu Perfil de Negocio de Google, entra a Leer opiniones, luego a Obtener más opiniones y selecciona Copiar. Si no lo encuentras, después de pagar te escribimos por WhatsApp y te ayudamos.
 6. **¿Puedo poner un link distinto en cada tarjeta?** Sí, por ejemplo si tienes varias sucursales. Después de pagar te escribimos por WhatsApp para saber qué link va en cada tarjeta.
 7. **¿Puedo comprar una sola tarjeta?** Sí. Elige Para mi negocio y con + y − eliges cuántas quieres. (Solo si existe la variante de 1 tarjeta.)
-8. **¿Cómo puedo pagar?** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay o Google Pay. Se paga en una sola exhibición, sin meses sin intereses.
+8. **¿Cómo puedo pagar?** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay, Mercado Pago o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.
 9. **¿Es seguro pagar?** El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.
 10. **¿Cuánto cuesta el envío?** Enviamos gratis a todo México, por FedEx o Paquetexpress.
 11. **¿Cuánto tarda en llegar?** De 2 a 8 días hábiles.
@@ -232,7 +232,7 @@ Solo con "Para mi negocio".
 | El vendedor escribe primero por WhatsApp para pedir los links | Cliente (PR13) |
 | Precios: $449 por tarjeta; packs de 10, 30, 50 y 100 | Cliente, 2026-10-08. En la página salen de Shopify |
 | Rango de reventa $350 a $500 por tarjeta | Cliente, 2026-10-08 |
-| Pagos: tarjeta de crédito y débito, Apple Pay, Google Pay; una sola exhibición | Cliente (PA1) |
+| Pagos: tarjeta de crédito y débito, Apple Pay, Google Pay, Mercado Pago y transferencia; una sola exhibición | Cliente (PA1) y desarrollador (2026-10-08) |
 | Envío gratis a todo México por FedEx o Paquetexpress, 2 a 8 días hábiles, rastreo por WhatsApp | Cliente (EN2, EN3, EN6, EN7) |
 | Sin factura por el momento | Cliente (FA1) |
 | Garantía de 5 años; resolución inmediata | Cliente (PV1, PV4) |

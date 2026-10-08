@@ -837,6 +837,15 @@ input[type='url'][aria-invalid='true'] {
   font-weight: 600;
   color: var(--ink-2);
 }
+.pay-chips li:not(:has(img)) {
+  align-items: center;
+  height: 24px;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: #fff;
+  font-size: 0.7rem;
+}
 .pay-chips img {
   display: block;
   width: 38px;

@@ -3,3 +3,6 @@ dist
 .env
 .env.local
 .DS_Store
+dist-shopify
+dist-shopify-theme
+escalera-nfc-tema.zip

@@ -9,7 +9,7 @@ const RASTREO = 'Te mandamos la guía y el número de rastreo por WhatsApp.';
 const FACTURA = 'Por el momento no emitimos factura.';
 
 const MEDIOS =
-  'Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay o Google Pay. Se paga en una sola exhibición, sin meses sin intereses.';
+  'Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay, Mercado Pago o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.';
 const ENVIO = 'Enviamos gratis a todo México, por FedEx o Paquetexpress.';
 const PASOS_LINK = 'En tu Perfil de Negocio de Google, entra a Leer opiniones, luego a Obtener más opiniones y selecciona Copiar.';
 const PAGO_SHOPIFY = 'El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.';
@@ -135,7 +135,7 @@ export const content = {
       shippingValue: 'Gratis a todo México.',
     },
     paymentTitle: 'Formas de pago',
-    paymentChips: ['Visa', 'Mastercard', 'American Express', 'Apple Pay', 'Google Pay'],
+    paymentChips: ['Visa', 'Mastercard', 'American Express', 'Apple Pay', 'Google Pay', 'Mercado Pago', 'Transferencia'],
     secure: 'Pago seguro en Shopify. Esta página no ve los datos de tu tarjeta.',
     nextTitle: 'Qué pasa después',
     next: {
@@ -166,8 +166,6 @@ export const content = {
       shippingPolicy: 'Política de envío',
       termsOfService: 'Términos del servicio',
     },
-    policiesPending:
-      '[[FALTA: PV6 Crear en Shopify las políticas de reembolso, envío y términos del servicio]]',
     payNote: 'Te llevamos al checkout de Shopify. Ahí pones tu dirección de entrega.',
     soldOut: 'Este pack se agotó. Elige otra cantidad.',
   },

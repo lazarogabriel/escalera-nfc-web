@@ -400,12 +400,9 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
       h('h2', {}, c.summary.nextTitle),
       h('ol', { class: 'sequence' }, ...c.summary.next[s.intent!].map((step) => h('li', {}, h('span', {}, t(step))))),
       ...c.summary.blocks.map((b) => h('section', { class: 'block' }, h('h2', {}, b.title), h('p', {}, t(b.body)))),
-      h(
-        'section',
-        { class: 'block' },
-        h('ul', { class: 'policies' }, ...policies.map((p) => h('li', {}, h('a', { href: p.url }, c.summary.policies[p.key])))),
-        h('p', { class: 'note' }, t(c.summary.policiesPending)),
-      ),
+      policies.length
+        ? h('section', { class: 'block' }, h('ul', { class: 'policies' }, ...policies.map((p) => h('li', {}, h('a', { href: p.url }, c.summary.policies[p.key])))))
+        : null,
     ];
   }
 

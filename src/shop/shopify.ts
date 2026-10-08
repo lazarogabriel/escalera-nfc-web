@@ -102,10 +102,9 @@ async function fetchFromApi(): Promise<Catalog> {
 }
 
 async function fetchFallback(): Promise<Catalog> {
-  const res = await fetch(`${import.meta.env.BASE_URL}variants.fallback.json`);
-  if (!res.ok) throw new CatalogError(`Respaldo: HTTP ${res.status}`);
-  const json: { variants: RawVariant[] } = await res.json();
-  return { packs: toPacks(json.variants), policies: [], source: 'fallback' };
+  // Va dentro del bundle (chunk aparte): funciona igual en GitHub Pages y en el tema de Shopify.
+  const { variants } = (await import('./variants.fallback.json')).default as { variants: RawVariant[] };
+  return { packs: toPacks(variants), policies: [], source: 'fallback' };
 }
 
 function toPacks(raw: RawVariant[]): Pack[] {

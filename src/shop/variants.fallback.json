@@ -1,33 +1,40 @@
 {
-  "actualizado": "2026-10-07",
+  "actualizado": "2026-10-08",
   "nota": "Respaldo si falla la Storefront API. Regenerar con npm run update:fallback cada vez que cambie un precio o un pack.",
   "variants": [
     {
       "id": "gid://shopify/ProductVariant/53465009946805",
       "title": "10 tarjetas",
       "availableForSale": true,
-      "price": "100.0",
+      "price": "1590.0",
       "currencyCode": "MXN"
     },
     {
       "id": "gid://shopify/ProductVariant/53465009979573",
-      "title": "20 tarjetas",
+      "title": "30 tarjetas",
       "availableForSale": true,
-      "price": "200.0",
+      "price": "4470.0",
       "currencyCode": "MXN"
     },
     {
       "id": "gid://shopify/ProductVariant/53465029968053",
       "title": "50 tarjetas",
       "availableForSale": true,
-      "price": "100.0",
+      "price": "6950.0",
       "currencyCode": "MXN"
     },
     {
       "id": "gid://shopify/ProductVariant/53465030000821",
       "title": "100 tarjetas",
       "availableForSale": true,
-      "price": "100.0",
+      "price": "12900.0",
+      "currencyCode": "MXN"
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53494515073205",
+      "title": "1",
+      "availableForSale": true,
+      "price": "449.0",
       "currencyCode": "MXN"
     }
   ]
