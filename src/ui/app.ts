@@ -5,6 +5,26 @@ import { buildCheckoutUrl, hasVolumeDiscount, pricePerCard, type Catalog, type P
 import { validateGoogleLink, type Flow, type FlowState, type Intent, type Step } from '../state/flow';
 import type { CardStage } from '../three/stage';
 import cardThumb from '../assets/card/card-front-1024.webp';
+import payVisa from '../assets/pay/visa.svg';
+import payMaster from '../assets/pay/master.svg';
+import payAmex from '../assets/pay/american_express.svg';
+import payUnionPay from '../assets/pay/unionpay.svg';
+import payApple from '../assets/pay/apple_pay.svg';
+import payGoogle from '../assets/pay/google_pay.svg';
+import payShop from '../assets/pay/shopify_pay.svg';
+import payOxxo from '../assets/pay/oxxo.svg';
+
+// Íconos oficiales de Shopify (activemerchant/payment_icons).
+const PAY_ICONS: Record<string, string> = {
+  Visa: payVisa,
+  Mastercard: payMaster,
+  'American Express': payAmex,
+  UnionPay: payUnionPay,
+  'Apple Pay': payApple,
+  'Google Pay': payGoogle,
+  'Shop Pay': payShop,
+  OXXO: payOxxo,
+};
 import { h, text } from './dom';
 import { money, packLabel, stackHeight } from './format';
 import { icon, logo, socialIcon, type IconName, type SocialName } from './icons';
@@ -310,7 +330,9 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
         ),
         h('p', { class: 'note' }, t(c.summary.totalNote)),
         h('p', { class: 'secure' }, icon('lock'), c.summary.secure),
-        h('ul', { class: 'pay-chips', 'aria-label': c.summary.paymentTitle }, ...c.summary.paymentChips.map((m) => h('li', {}, m))),
+        h('ul', { class: 'pay-chips', 'aria-label': c.summary.paymentTitle }, ...c.summary.paymentChips.map((m) =>
+          h('li', { title: m }, PAY_ICONS[m] ? h('img', { src: PAY_ICONS[m], alt: m, width: '38', height: '24' }) : m),
+        )),
       ),
       h('h2', {}, c.summary.nextTitle),
       h('ol', { class: 'sequence' }, ...c.summary.next[s.intent!].map((step) => h('li', {}, h('span', {}, t(step))))),

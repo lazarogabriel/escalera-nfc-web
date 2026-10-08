@@ -738,13 +738,15 @@ input[type='url'][aria-invalid='true'] {
   margin-top: 0.6rem;
 }
 .pay-chips li {
-  padding: 0.25rem 0.6rem;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fafbfe;
+  display: flex;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-2);
+}
+.pay-chips img {
+  display: block;
+  width: 38px;
+  height: 24px;
 }
 .block {
   padding: 0.25rem 0;
