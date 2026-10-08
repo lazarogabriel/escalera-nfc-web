@@ -8,13 +8,23 @@ const TOKEN = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
 const API_TIMEOUT_MS = 6000;
 const VARIANT_GID_PREFIX = 'gid://shopify/ProductVariant/';
 
+/** Colores de la tarjeta. */
+export type CardColor = 'negro' | 'blanco';
+/** Color de una variante: los packs de reventa también pueden ser mixtos. */
+export type PackColor = CardColor | 'mixto';
+export const CARD_COLORS: CardColor[] = ['negro', 'blanco'];
+
+// Valores de la opción "Color" en Shopify (en minúsculas y sin acentos).
+const COLOR_BY_OPTION: Record<string, PackColor> = { negro: 'negro', blanco: 'blanco', mixto: 'mixto' };
+
 export interface Pack {
   /** ID numérico: lo que sigue a gid://shopify/ProductVariant/ */
   variantId: string;
-  /** Título de la variante tal cual ("10 tarjetas"). */
+  /** Título de la variante tal cual ("10 tarjetas / Negro"). */
   title: string;
-  /** Cantidad de tarjetas, leída del título. */
+  /** Cantidad de tarjetas, leída de la opción "Pack" ("10 tarjetas", "1"). */
   cards: number;
+  color: PackColor;
   available: boolean;
   price: number;
   currency: string;
@@ -40,6 +50,7 @@ interface RawVariant {
   availableForSale: boolean;
   price: string;
   currencyCode: string;
+  selectedOptions: { name: string; value: string }[];
 }
 
 const QUERY = /* GraphQL */ `
@@ -52,7 +63,7 @@ const QUERY = /* GraphQL */ `
     }
     product(handle: $handle) {
       variants(first: 20) {
-        nodes { id title availableForSale price { amount currencyCode } }
+        nodes { id title availableForSale price { amount currencyCode } selectedOptions { name value } }
       }
     }
   }
@@ -92,6 +103,7 @@ async function fetchFromApi(): Promise<Catalog> {
     availableForSale: v.availableForSale,
     price: v.price.amount,
     currencyCode: v.price.currencyCode,
+    selectedOptions: v.selectedOptions,
   }));
   // Shopify devuelve los títulos en inglés; el texto visible sale de content.
   const policies = Object.entries(json.data.shop ?? {})
@@ -107,15 +119,20 @@ async function fetchFallback(): Promise<Catalog> {
   return { packs: toPacks(variants), policies: [], source: 'fallback' };
 }
 
+const normalize = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
 function toPacks(raw: RawVariant[]): Pack[] {
   const packs = raw
     .map((v): Pack | null => {
-      const cards = Number(v.title.match(/\d+/)?.[0]);
-      if (!cards || !v.id.startsWith(VARIANT_GID_PREFIX)) return null;
+      const option = (name: string) => v.selectedOptions.find((o) => normalize(o.name) === name)?.value ?? '';
+      const cards = Number(option('pack').match(/\d+/)?.[0]);
+      const color = COLOR_BY_OPTION[normalize(option('color'))];
+      if (!cards || !color || !v.id.startsWith(VARIANT_GID_PREFIX)) return null;
       return {
         variantId: v.id.slice(VARIANT_GID_PREFIX.length),
         title: v.title,
         cards,
+        color,
         available: v.availableForSale,
         price: Number(v.price),
         currency: v.currencyCode,
@@ -130,8 +147,16 @@ function toPacks(raw: RawVariant[]): Pack[] {
 export interface CheckoutAttributes {
   /** Texto legible de la intención ("Para mi negocio"). */
   intencion: string;
+  /** Colores en texto ("2 negras y 1 blanca"). */
+  colores: string;
   link_google?: string;
   link_por_whatsapp?: string;
+}
+
+/** Una línea del carrito: una variante y cuántas unidades. */
+export interface CheckoutLine {
+  pack: Pack;
+  quantity: number;
 }
 
 /**
@@ -139,19 +164,20 @@ export interface CheckoutAttributes {
  * se vea de entrada en el pedido de Shopify, sin tener que abrir el detalle de los atributos.
  */
 function buildOrderNote(attributes: CheckoutAttributes): string {
-  const lines = [`Uso: ${attributes.intencion}`];
+  const lines = [`Uso: ${attributes.intencion}`, `Colores: ${attributes.colores}`];
   if (attributes.link_google) lines.push(`Link de reseñas: ${attributes.link_google}`);
   if (attributes.link_por_whatsapp) lines.push('No puso link: escribirle por WhatsApp para saber qué link va en cada tarjeta.');
   return lines.join('\n');
 }
 
-/** Cart permalink: https://{dominio}/cart/{variantId}:{cantidad}?attributes[clave]=valor&note=... */
-export function buildCheckoutUrl(pack: Pack, quantity: number, attributes: CheckoutAttributes): string {
+/** Cart permalink: https://{dominio}/cart/{variantId}:{cantidad},{variantId}:{cantidad}?attributes[clave]=valor&note=... */
+export function buildCheckoutUrl(lines: CheckoutLine[], attributes: CheckoutAttributes): string {
   const params = Object.entries(attributes)
     .filter(([, value]) => value)
     .map(([key, value]) => `attributes[${key}]=${encodeURIComponent(value!)}`);
   params.push(`note=${encodeURIComponent(buildOrderNote(attributes))}`);
-  return `https://${DOMAIN}/cart/${pack.variantId}:${quantity}?${params.join('&')}`;
+  const items = lines.map((l) => `${l.pack.variantId}:${l.quantity}`).join(',');
+  return `https://${DOMAIN}/cart/${items}?${params.join('&')}`;
 }
 
 export function pricePerCard(pack: Pack): number {

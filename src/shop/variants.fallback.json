@@ -4,38 +4,258 @@
   "variants": [
     {
       "id": "gid://shopify/ProductVariant/53465009946805",
-      "title": "10 tarjetas",
+      "title": "10 tarjetas / Blanco",
       "availableForSale": true,
       "price": "1590.0",
-      "currencyCode": "MXN"
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "10 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Blanco"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495965155509",
+      "title": "10 tarjetas / Negro",
+      "availableForSale": true,
+      "price": "1590.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "10 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Negro"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495987470517",
+      "title": "10 tarjetas / Mixto",
+      "availableForSale": true,
+      "price": "1590.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "10 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Mixto"
+        }
+      ]
     },
     {
       "id": "gid://shopify/ProductVariant/53465009979573",
-      "title": "30 tarjetas",
+      "title": "30 tarjetas / Blanco",
       "availableForSale": true,
       "price": "4470.0",
-      "currencyCode": "MXN"
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "30 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Blanco"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495965188277",
+      "title": "30 tarjetas / Negro",
+      "availableForSale": true,
+      "price": "4470.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "30 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Negro"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495987503285",
+      "title": "30 tarjetas / Mixto",
+      "availableForSale": true,
+      "price": "4470.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "30 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Mixto"
+        }
+      ]
     },
     {
       "id": "gid://shopify/ProductVariant/53465029968053",
-      "title": "50 tarjetas",
+      "title": "50 tarjetas / Blanco",
       "availableForSale": true,
       "price": "6950.0",
-      "currencyCode": "MXN"
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "50 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Blanco"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495965221045",
+      "title": "50 tarjetas / Negro",
+      "availableForSale": true,
+      "price": "6950.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "50 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Negro"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495987536053",
+      "title": "50 tarjetas / Mixto",
+      "availableForSale": true,
+      "price": "6950.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "50 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Mixto"
+        }
+      ]
     },
     {
       "id": "gid://shopify/ProductVariant/53465030000821",
-      "title": "100 tarjetas",
+      "title": "100 tarjetas / Blanco",
       "availableForSale": true,
       "price": "12900.0",
-      "currencyCode": "MXN"
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "100 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Blanco"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495965253813",
+      "title": "100 tarjetas / Negro",
+      "availableForSale": true,
+      "price": "12900.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "100 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Negro"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495987568821",
+      "title": "100 tarjetas / Mixto",
+      "availableForSale": true,
+      "price": "12900.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "100 tarjetas"
+        },
+        {
+          "name": "Color",
+          "value": "Mixto"
+        }
+      ]
     },
     {
       "id": "gid://shopify/ProductVariant/53494515073205",
-      "title": "1",
+      "title": "1 / Blanco",
       "availableForSale": true,
       "price": "449.0",
-      "currencyCode": "MXN"
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "1"
+        },
+        {
+          "name": "Color",
+          "value": "Blanco"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495965286581",
+      "title": "1 / Negro",
+      "availableForSale": true,
+      "price": "449.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "1"
+        },
+        {
+          "name": "Color",
+          "value": "Negro"
+        }
+      ]
+    },
+    {
+      "id": "gid://shopify/ProductVariant/53495987601589",
+      "title": "1 / Mixto",
+      "availableForSale": true,
+      "price": "449.0",
+      "currencyCode": "MXN",
+      "selectedOptions": [
+        {
+          "name": "Pack",
+          "value": "1"
+        },
+        {
+          "name": "Color",
+          "value": "Mixto"
+        }
+      ]
     }
   ]
 }

@@ -20,12 +20,12 @@ Texto final de la landing, en español de México, de tú. Este documento es la 
 
 ### 1.1 Para mi negocio
 - **Quién es:** dueño de uno o varios locales.
-- **Qué compra:** tarjetas sueltas a $449 MXN cada una, de 1 a 3, con + y −. Usa la variante "1 tarjeta" de Shopify con la cantidad elegida.
+- **Qué compra:** tarjetas sueltas a $449 MXN cada una, de 1 a 3 en total, con un contador + y − por color (negra y blanca); puede combinar colores. Usa las variantes "1 / Negro" y "1 / Blanco" de Shopify, una línea del carrito por color.
 - **Lo que pasa después:** pega su link en la página o marca que le escriban por WhatsApp. El vendedor le escribe por WhatsApp para confirmar qué link va en cada tarjeta (sirve también para quien tiene varias sucursales). Recibe las tarjetas programadas y bloqueadas.
 
 ### 1.2 Para revender
 - **Quién es:** una agencia o un emprendedor que vende las tarjetas a otros negocios.
-- **Qué compra:** un pack de 10, 30, 50 o 100 tarjetas. Mientras más grande el pack, menos cuesta cada tarjeta.
+- **Qué compra:** un pack de 10, 30, 50 o 100 tarjetas, todas negras, todas blancas o mixto (elige cuántas negras; el resto son blancas). Mientras más grande el pack, menos cuesta cada tarjeta. El mixto usa la variante "Mixto" del pack, al mismo precio, y el reparto viaja en la nota del pedido.
 - **Qué necesita saber:** que le llegan sin programar y sin bloquear, que recibe por WhatsApp un video para programarlas con NFC Tools, que no hay marca blanca, y cuánto puede ganar.
 - **Ganancia estimada:** cada pack muestra cuánto gana si revende cada tarjeta entre $350 y $500 MXN: `350 × n − precio` a `500 × n − precio`. Con los precios del cliente: 10 tarjetas $1,910 a $3,410; 30 tarjetas $6,030 a $10,530; 50 tarjetas $10,550 a $18,050; 100 tarjetas $22,100 a $37,100.
 
@@ -33,15 +33,16 @@ La opción "Para varias sucursales" se eliminó (cliente, 2026-10-08).
 
 ### Lo que viaja al pedido
 
-Viaja en el cart permalink (`/cart/{variante}:{cantidad}?attributes[clave]=valor&note=...`). Shopify lo adjunta al pedido sin backend propio.
+Viaja en el cart permalink (`/cart/{variante}:{cantidad},{variante}:{cantidad}?attributes[clave]=valor&note=...`, una línea por variante). Shopify lo adjunta al pedido sin backend propio.
 
 | Atributo | Valor |
 |---|---|
 | `intencion` | "Para mi negocio" o "Para revender" |
+| `colores` | Tarjetas de cada color: "2 negras y 1 blanca", "30 blancas" o, en un pack mixto, "15 negras y 15 blancas" |
 | `link_google` | El link pegado. Solo con "Para mi negocio", y solo si lo pegó |
 | `link_por_whatsapp` | "Sí", cuando no pegó link |
 
-Además va `note`, la nota del pedido, con lo mismo en texto legible: "Uso: …", "Link de reseñas: …" o "No puso link: escribirle por WhatsApp para saber qué link va en cada tarjeta."
+Además va `note`, la nota del pedido, con lo mismo en texto legible: "Uso: …", "Colores: …", "Link de reseñas: …" o "No puso link: escribirle por WhatsApp para saber qué link va en cada tarjeta."
 
 **Dónde se ve:** admin de Shopify → Pedidos → abrir el pedido. La nota aparece arriba, en "Notas"; los atributos, en "Detalles adicionales". Es el comportamiento estándar de Shopify.
 
@@ -54,6 +55,10 @@ Además va `note`, la nota del pedido, con lo mismo en texto legible: "Uso: …"
 **Bajada:** Tu cliente acerca su celular a la tarjeta y se abre tu página de reseñas en Google. No tiene que instalar nada.
 
 **Nota de medida** (texto chico): Mide 12 × 12 cm.
+
+**Colores** (con dos círculos, negro y blanco): En negro o en blanco, al mismo precio. Puedes combinarlas.
+
+**Selector sobre la tarjeta 3D** (solo en Entrada y Para qué la quieres): Negra / Blanca. Nombre accesible del grupo: Color de la tarjeta. Tocar o deslizar la tarjeta también la da vuelta al otro color.
 
 **Precio:** {precio} MXN por tarjeta. Al lado: Disponible / Agotado.
 **Debajo:** Para revender, desde {desde} MXN por tarjeta.
@@ -88,19 +93,24 @@ Además va `note`, la nota del pedido, con lo mismo en texto legible: "Uso: …"
 
 ### 2.3 Cantidad (`#/cantidad`)
 
-**Titular:** Elige cuántas tarjetas
+**Titular:** Elige tus tarjetas
 
 *Para mi negocio:*
-- Bajada: Cuenta los lugares donde la vas a poner: mostrador, mesas, entrada.
-- Contador: botones − y + (nombres accesibles "Una tarjeta menos" y "Una tarjeta más"), de 1 a 3 (máximo 3; con más, se elige Para revender). En el centro, {pack}. Al lado: {precio} MXN por tarjeta y el total, {total} MXN.
-- Si no existe la variante de 1 tarjeta o está agotada: Por ahora no hay tarjetas disponibles. Escríbenos por WhatsApp.
+- Bajada: Cuenta los lugares donde la vas a poner: mostrador, mesas, entrada. Puedes combinar colores.
+- Una fila por color, con miniatura: Negra / Blanca, "{precio} MXN c/u" (o "Agotado") y un contador − y + (nombres accesibles "Una negra menos", "Una negra más", "Una blanca menos", "Una blanca más"). Arranca con 1 del color que estaba mirando. Total de 1 a 3.
+- Al pie: {n} tarjetas y el total, {total} MXN.
+- Nota: Máximo 3 tarjetas en total. Si necesitas más, elige Para revender.
+- Si no hay variantes de 1 tarjeta o están agotadas: Por ahora no hay tarjetas disponibles. Escríbenos por WhatsApp.
 - Botón: Agregar tu link
 
 *Para revender:*
 - Bajada: Mientras más grande el pack, menos cuesta cada tarjeta.
 - Fila de pack: {pack}, {total} MXN, {porTarjeta} MXN por tarjeta, y "Ganancia: {desde} a {hasta} MXN".
+- Subtítulos: Tamaño del pack y Color del pack.
 - Bajo la lista: En los packs más grandes cada tarjeta cuesta menos. (solo si de verdad baja) y Ganancia estimada si revendes cada tarjeta entre $350 y $500 MXN.
-- Error sin selección: Elige una cantidad para seguir.
+- Color del pack (con miniatura): Negras, "Todo el pack" · Blancas, "Todo el pack" · Mixto, "Tú eliges". Mixto solo aparece si existe la variante en Shopify. Al elegir un tamaño se marca el color que estaba mirando.
+- Si es mixto: ¿Cuántas negras? con un deslizador (de a 1 en packs de 10 y 30, de a 5 en 50 y 100; nunca todas de un color) y el texto "{n} negras y {m} blancas". Nota: El resto del pack son blancas.
+- Error sin tamaño: Elige una cantidad para seguir. Sin color: Elige el color del pack para seguir.
 - Botón: Revisar pedido
 
 **Nota de precio:** Precios en pesos mexicanos. Envío gratis a todo México.
@@ -126,15 +136,17 @@ Solo con "Para mi negocio".
 
 **Titular:** Revisa tu pedido
 
+**Renglones del pedido** (con miniatura y precio): negocio, uno por color ("Tarjeta NFC negra", "2 tarjetas"); reventa, uno por pack ("Pack de 30 tarjetas", "15 negras y 15 blancas").
+
 | Renglón | Valor | Acción |
 |---|---|---|
 | Uso | Para mi negocio / Para revender | Cambiar uso |
-| Cantidad | {pack} | Cambiar cantidad |
+| Tarjetas | Negocio: "2 negras y 1 blanca". Reventa: "Pack de 30, todas negras", "Pack de 30, todas blancas" o "Pack de 30: 15 negras y 15 blancas" | Cambiar |
 | Link (solo negocio) | {link}, o "Te escribimos por WhatsApp después de pagar" | Cambiar link |
 | Envío | Gratis a todo México. | — |
 | Total | {total} MXN | — |
 
-**Pie:** Pago seguro en Shopify. Esta página no ve los datos de tu tarjeta. Íconos: Visa, Mastercard, American Express, Apple Pay, Google Pay, y etiquetas de texto Mercado Pago y Transferencia.
+**Pie:** Pago seguro en Shopify. Esta página no ve los datos de tu tarjeta. Íconos: Visa, Mastercard, American Express, Apple Pay, Google Pay, y etiquetas de texto y Transferencia.
 
 **Qué pasa después** (numerada):
 
@@ -153,7 +165,7 @@ Solo con "Para mi negocio".
 
 **Bloques:**
 - **Pagas en Shopify:** El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.
-- **Formas de pago:** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay, Mercado Pago o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.
+- **Formas de pago:** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.
 - **Envío:** Enviamos gratis a todo México, por FedEx o Paquetexpress. Te llegan en 2 a 8 días hábiles. Te mandamos la guía y el número de rastreo por WhatsApp.
 - **Factura:** Por el momento no emitimos factura.
 - **Si una tarjeta falla:** Garantía de 5 años. Si una tarjeta falla, escríbenos por WhatsApp en cuanto lo notes y la resolvemos de inmediato: te la reponemos o te devolvemos tu dinero, y nosotros pagamos el envío.
@@ -167,7 +179,7 @@ Solo con "Para mi negocio".
 
 - Entrada: {precio} MXN por tarjeta. y el botón Comprar tarjetas.
 - Sin cantidad: Todavía no eliges cantidad.
-- Con cantidad: arriba {pack}, abajo {total} MXN.
+- Con cantidad: arriba los colores ("2 negras y 1 blanca"), abajo {total} MXN.
 - Botón: el principal del paso.
 
 ### 2.7 Ayuda (panel)
@@ -198,21 +210,22 @@ Solo con "Para mi negocio".
 1. **¿Qué celulares pueden leer la tarjeta?** Los que tienen NFC. En iPhone XR, XS, SE de 2.ª generación y posteriores, basta con acercarlo con la pantalla encendida. En iPhone 7, 8 y X hay que abrir el lector NFC desde el Centro de control. En Android, el NFC tiene que estar activado, y no todos los modelos lo tienen.
 2. **¿Y si el celular de mi cliente no tiene NFC?** No va a poder leerla. La tarjeta no lleva código QR.
 3. **¿Mi cliente tiene que instalar una app?** No. El celular abre el link sin instalar nada.
-4. **¿Las tarjetas llegan listas para usar?** Si las compras para tu negocio, sí: llegan programadas con tu link y bloqueadas. Si las compras para revender, llegan en blanco y te mandamos por WhatsApp un video para programarlas con la app NFC Tools.
-5. **¿Dónde consigo mi link de reseñas?** En tu Perfil de Negocio de Google, entra a Leer opiniones, luego a Obtener más opiniones y selecciona Copiar. Si no lo encuentras, después de pagar te escribimos por WhatsApp y te ayudamos.
-6. **¿Puedo poner un link distinto en cada tarjeta?** Sí, por ejemplo si tienes varias sucursales. Después de pagar te escribimos por WhatsApp para saber qué link va en cada tarjeta.
-7. **¿Puedo comprar una sola tarjeta?** Sí. Elige Para mi negocio y con + y − eliges cuántas quieres. (Solo si existe la variante de 1 tarjeta.)
-8. **¿Cómo puedo pagar?** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay, Mercado Pago o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.
-9. **¿Es seguro pagar?** El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.
-10. **¿Cuánto cuesta el envío?** Enviamos gratis a todo México, por FedEx o Paquetexpress.
-11. **¿Cuánto tarda en llegar?** De 2 a 8 días hábiles.
-12. **¿Puedo rastrear mi pedido?** Sí. Te mandamos la guía y el número de rastreo por WhatsApp.
-13. **¿Dan factura?** Por el momento no emitimos factura.
-14. **¿Qué pasa si una tarjeta no funciona?** Garantía de 5 años. Si una tarjeta falla, escríbenos por WhatsApp en cuanto lo notes y la resolvemos de inmediato: te la reponemos o te devolvemos tu dinero, y nosotros pagamos el envío.
-15. **¿Aceptan cambios o devoluciones?** No hay cambios ni devoluciones, salvo que la tarjeta tenga un error de fabricación.
-16. **¿Hay precio especial para revendedores?** Sí. Para revender se venden packs, y mientras más grande el pack, menos cuesta cada tarjeta. Llevan un solo diseño, sin marca blanca.
-17. **¿La tarjeta me asegura más reseñas?** No. Hace más fácil llegar a tu página de reseñas. Lo que escriba cada cliente depende de su experiencia.
-18. **¿Puedo dar un descuento a quien deje una reseña?** No. Google prohíbe ofrecer descuentos, regalos o pagos a cambio de reseñas, y pedirlas solo a los clientes contentos. Pídela a todos por igual.
+4. **¿De qué colores hay?** Negro y blanco, al mismo precio. Para tu negocio puedes combinar los dos colores en un mismo pedido. En los packs para revender eliges todas negras, todas blancas o mixto, y nos dices cuántas negras quieres.
+5. **¿Las tarjetas llegan listas para usar?** Si las compras para tu negocio, sí: llegan programadas con tu link y bloqueadas. Si las compras para revender, llegan en blanco y te mandamos por WhatsApp un video para programarlas con la app NFC Tools.
+6. **¿Dónde consigo mi link de reseñas?** En tu Perfil de Negocio de Google, entra a Leer opiniones, luego a Obtener más opiniones y selecciona Copiar. Si no lo encuentras, después de pagar te escribimos por WhatsApp y te ayudamos.
+7. **¿Puedo poner un link distinto en cada tarjeta?** Sí, por ejemplo si tienes varias sucursales. Después de pagar te escribimos por WhatsApp para saber qué link va en cada tarjeta.
+8. **¿Puedo comprar una sola tarjeta?** Sí. Elige Para mi negocio y con + y − eliges cuántas quieres. (Solo si existe la variante de 1 tarjeta.)
+9. **¿Cómo puedo pagar?** Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.
+10. **¿Es seguro pagar?** El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.
+11. **¿Cuánto cuesta el envío?** Enviamos gratis a todo México, por FedEx o Paquetexpress.
+12. **¿Cuánto tarda en llegar?** De 2 a 8 días hábiles.
+13. **¿Puedo rastrear mi pedido?** Sí. Te mandamos la guía y el número de rastreo por WhatsApp.
+14. **¿Dan factura?** Por el momento no emitimos factura.
+15. **¿Qué pasa si una tarjeta no funciona?** Garantía de 5 años. Si una tarjeta falla, escríbenos por WhatsApp en cuanto lo notes y la resolvemos de inmediato: te la reponemos o te devolvemos tu dinero, y nosotros pagamos el envío.
+16. **¿Aceptan cambios o devoluciones?** No hay cambios ni devoluciones, salvo que la tarjeta tenga un error de fabricación.
+17. **¿Hay precio especial para revendedores?** Sí. Para revender se venden packs, y mientras más grande el pack, menos cuesta cada tarjeta. Vienen en negro, en blanco o mixtos, sin marca blanca.
+18. **¿La tarjeta me asegura más reseñas?** No. Hace más fácil llegar a tu página de reseñas. Lo que escriba cada cliente depende de su experiencia.
+19. **¿Puedo dar un descuento a quien deje una reseña?** No. Google prohíbe ofrecer descuentos, regalos o pagos a cambio de reseñas, y pedirlas solo a los clientes contentos. Pídela a todos por igual.
 
 ## 5. Metadatos
 
@@ -232,7 +245,7 @@ Solo con "Para mi negocio".
 | El vendedor escribe primero por WhatsApp para pedir los links | Cliente (PR13) |
 | Precios: $449 por tarjeta; packs de 10, 30, 50 y 100 | Cliente, 2026-10-08. En la página salen de Shopify |
 | Rango de reventa $350 a $500 por tarjeta | Cliente, 2026-10-08 |
-| Pagos: tarjeta de crédito y débito, Apple Pay, Google Pay, Mercado Pago y transferencia; una sola exhibición | Cliente (PA1) y desarrollador (2026-10-08) |
+| Pagos: tarjeta de crédito y débito, Apple Pay, Google Pay y transferencia; una sola exhibición | Cliente (PA1) y desarrollador (2026-10-08) |
 | Envío gratis a todo México por FedEx o Paquetexpress, 2 a 8 días hábiles, rastreo por WhatsApp | Cliente (EN2, EN3, EN6, EN7) |
 | Sin factura por el momento | Cliente (FA1) |
 | Garantía de 5 años; resolución inmediata | Cliente (PV1, PV4) |

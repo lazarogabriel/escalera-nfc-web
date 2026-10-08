@@ -30,6 +30,11 @@ Reemplaza a la dirección A. El cliente pidió un estilo más moderno, que se no
   - entorno de estudio, sombras suaves en tiempo real y flotación suave;
   - en los pasos de una sola tarjeta, se levanta y mira a la cámara;
   - en los pasos de cantidad, descansa sobre el piso y la pila crece a escala real, con una franja por tarjeta.
+- **Colores (2026-10-08):** la tarjeta viene en negro y en blanco (arte del proveedor: páginas 1 y 3 del PDF `src/assets/card/12x12 google.pdf`).
+  - En Entrada y Para qué la quieres, una píldora de vidrio abajo de la vitrina (Negra / Blanca) con un fondo blanco que se desliza al elegido. Tocar o deslizar la tarjeta hace lo mismo.
+  - Al cambiar de color, la tarjeta se levanta, se da vuelta y aterriza mostrando el otro color.
+  - La pila respeta los colores del pedido: abajo las del otro color, arriba las del color que se ve. La tarjeta negra tiene canto oscuro con brillo frío.
+  - Negocio: una fila por color con miniatura y contador. Reventa: tamaño en mosaico y color del pack (negras, blancas, mixto) con miniaturas; el mixto abre un deslizador cuyo riel es la proporción negro/blanco.
 - **Momento del tap:** un teléfono modelado entra, se apoya sobre el ícono NFC del arte, salen dos ondas y se encienden cinco estrellas en su pantalla.
 - **Se mantiene:** sin logos de terceros salvo el arte del producto, medios de pago nombrados con texto, movimiento reducido con fundidos, contraste AA.
 

@@ -2,6 +2,7 @@
 // [[FALTA: CÓDIGO pregunta]] se muestra como aviso "Falta responder" y bloquea `npm run build`.
 // {variables} se llenan con fill().
 
+import type { CardColor, PackColor } from '../shop/shopify';
 import type { Intent } from '../state/flow';
 
 const ENTREGA = 'Te llegan en 2 a 8 días hábiles.';
@@ -9,7 +10,7 @@ const RASTREO = 'Te mandamos la guía y el número de rastreo por WhatsApp.';
 const FACTURA = 'Por el momento no emitimos factura.';
 
 const MEDIOS =
-  'Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay, Mercado Pago o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.';
+  'Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay, Google Pay o transferencia bancaria. Se paga en una sola exhibición, sin meses sin intereses. Con transferencia, preparamos tu pedido cuando se acredita el pago.';
 const ENVIO = 'Enviamos gratis a todo México, por FedEx o Paquetexpress.';
 const PASOS_LINK = 'En tu Perfil de Negocio de Google, entra a Leer opiniones, luego a Obtener más opiniones y selecciona Copiar.';
 const PAGO_SHOPIFY = 'El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.';
@@ -37,6 +38,7 @@ export const content = {
     retry: 'Reintentar',
     changeIntent: 'Cambiar uso',
     changeQuantity: 'Cambiar cantidad',
+    changeCards: 'Cambiar',
     changeLink: 'Cambiar link',
   },
 
@@ -44,10 +46,21 @@ export const content = {
     label: 'Falta responder',
   },
 
+  colors: {
+    switchLabel: 'Color de la tarjeta',
+    names: { negro: 'Negra', blanco: 'Blanca' } satisfies Record<CardColor, string>,
+    // {n} tarjetas de un color: "1 negra", "3 blancas".
+    one: { negro: '{n} negra', blanco: '{n} blanca' } satisfies Record<CardColor, string>,
+    many: { negro: '{n} negras', blanco: '{n} blancas' } satisfies Record<CardColor, string>,
+    and: '{a} y {b}',
+    item: { negro: 'Tarjeta NFC negra', blanco: 'Tarjeta NFC blanca' } satisfies Record<CardColor, string>,
+  },
+
   entry: {
     title: 'Tarjeta NFC para tus reseñas de Google',
     lead: 'Tu cliente acerca su celular a la tarjeta y se abre tu página de reseñas en Google. No tiene que instalar nada.',
     size: 'Mide 12 × 12 cm.',
+    colors: 'En negro o en blanco, al mismo precio. Puedes combinarlas.',
     stepsTitle: 'Cómo funciona',
     steps: [
       'Pones la tarjeta en tu mostrador, mesa o entrada.',
@@ -85,17 +98,28 @@ export const content = {
   },
 
   quantity: {
-    title: 'Elige cuántas tarjetas',
+    title: 'Elige tus tarjetas',
     lead: {
-      negocio: 'Cuenta los lugares donde la vas a poner: mostrador, mesas, entrada.',
+      negocio: 'Cuenta los lugares donde la vas a poner: mostrador, mesas, entrada. Puedes combinar colores.',
       reventa: 'Mientras más grande el pack, menos cuesta cada tarjeta.',
     } satisfies Record<Intent, string>,
     oneCard: '1 tarjeta',
     cards: '{n} tarjetas',
-    less: 'Una tarjeta menos',
-    more: 'Una tarjeta más',
-    maxNote: 'Máximo 3 tarjetas. Si necesitas más, elige Para revender.',
-    unitPrice: '{precio} MXN por tarjeta',
+    less: { negro: 'Una negra menos', blanco: 'Una blanca menos' } satisfies Record<CardColor, string>,
+    more: { negro: 'Una negra más', blanco: 'Una blanca más' } satisfies Record<CardColor, string>,
+    maxNote: 'Máximo 3 tarjetas en total. Si necesitas más, elige Para revender.',
+    unitPrice: '{precio} MXN c/u',
+    sizeTitle: 'Tamaño del pack',
+    colorTitle: 'Color del pack',
+    packColors: {
+      negro: { label: 'Negras', detail: 'Todo el pack' },
+      blanco: { label: 'Blancas', detail: 'Todo el pack' },
+      mixto: { label: 'Mixto', detail: 'Tú eliges' },
+    } satisfies Record<PackColor, { label: string; detail: string }>,
+    mixLabel: '¿Cuántas negras?',
+    mixNote: 'El resto del pack son blancas.',
+    errorColor: 'Elige el color del pack para seguir.',
+    colorSoldOut: 'Agotado',
     total: '{total} MXN',
     perCard: '{porTarjeta} MXN por tarjeta',
     // Margen estimado si el revendedor cobra cada tarjeta entre estos precios (dato del cliente).
@@ -128,6 +152,7 @@ export const content = {
     rows: {
       intent: 'Uso',
       quantity: 'Cantidad',
+      cards: 'Tarjetas',
       link: 'Link',
       linkLater: 'Te escribimos por WhatsApp después de pagar',
       total: 'Total',
@@ -135,7 +160,7 @@ export const content = {
       shippingValue: 'Gratis a todo México.',
     },
     paymentTitle: 'Formas de pago',
-    paymentChips: ['Visa', 'Mastercard', 'American Express', 'Apple Pay', 'Google Pay', 'Mercado Pago', 'Transferencia'],
+    paymentChips: ['Visa', 'Mastercard', 'American Express', 'Apple Pay', 'Google Pay', 'Transferencia'],
     secure: 'Pago seguro en Shopify. Esta página no ve los datos de tu tarjeta.',
     nextTitle: 'Qué pasa después',
     next: {
@@ -168,6 +193,13 @@ export const content = {
     },
     payNote: 'Te llevamos al checkout de Shopify. Ahí pones tu dirección de entrega.',
     soldOut: 'Este pack se agotó. Elige otra cantidad.',
+    // Reventa: "Pack de 30, todas negras" o "Pack de 30: 15 negras y 15 blancas".
+    pack: {
+      negro: 'Pack de {n}, todas negras',
+      blanco: 'Pack de {n}, todas blancas',
+      mixto: 'Pack de {n}: {mezcla}',
+    } satisfies Record<PackColor, string>,
+    packItem: 'Pack de {n} tarjetas',
   },
 
   bar: {
@@ -192,6 +224,10 @@ export const content = {
     { q: '¿Y si el celular de mi cliente no tiene NFC?', a: 'No va a poder leerla. La tarjeta no lleva código QR.' },
     { q: '¿Mi cliente tiene que instalar una app?', a: 'No. El celular abre el link sin instalar nada.' },
     {
+      q: '¿De qué colores hay?',
+      a: 'Negro y blanco, al mismo precio. Para tu negocio puedes combinar los dos colores en un mismo pedido. En los packs para revender eliges todas negras, todas blancas o mixto, y nos dices cuántas negras quieres.',
+    },
+    {
       q: '¿Las tarjetas llegan listas para usar?',
       a: 'Si las compras para tu negocio, sí: llegan programadas con tu link y bloqueadas. Si las compras para revender, llegan en blanco y te mandamos por WhatsApp un video para programarlas con la app NFC Tools.',
     },
@@ -215,7 +251,7 @@ export const content = {
     },
     {
       q: '¿Hay precio especial para revendedores?',
-      a: 'Sí. Para revender se venden packs, y mientras más grande el pack, menos cuesta cada tarjeta. Llevan un solo diseño, sin marca blanca.',
+      a: 'Sí. Para revender se venden packs, y mientras más grande el pack, menos cuesta cada tarjeta. Vienen en negro, en blanco o mixtos, sin marca blanca.',
     },
     {
       q: '¿La tarjeta me asegura más reseñas?',

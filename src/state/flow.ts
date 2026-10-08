@@ -1,16 +1,24 @@
 // Máquina de estados del flujo. El paso vive en el hash (#/cantidad) para que Atrás funcione.
 // Las elecciones viven solo en memoria: la página no guarda datos.
 
+import type { CardColor, PackColor } from '../shop/shopify';
+
 export type Step = 'entrada' | 'intencion' | 'cantidad' | 'personaliza' | 'resumen';
 export type Intent = 'negocio' | 'reventa';
 
 export interface FlowState {
   step: Step;
   intent: Intent | null;
-  /** Pack elegido. Solo en reventa; negocio compra la variante de 1 tarjeta. */
-  variantId: string | null;
-  /** Tarjetas sueltas para negocio. */
-  quantity: number;
+  /** Tarjetas sueltas por color. Solo negocio; compra la variante de 1 tarjeta de cada color. */
+  counts: Record<CardColor, number>;
+  /** Tamaño del pack elegido (tarjetas). Solo reventa. */
+  packSize: number | null;
+  /** Color del pack. Solo reventa. */
+  packColor: PackColor | null;
+  /** Pack mixto: cuántas son negras; el resto son blancas. */
+  mixNegras: number;
+  /** Color que muestra la tarjeta 3D arriba de la pila. */
+  preview: CardColor;
   link: string;
   linkLater: boolean;
 }
@@ -24,6 +32,11 @@ const HASH_BY_STEP: Record<Step, string> = {
 };
 
 const STEP_BY_HASH = new Map(Object.entries(HASH_BY_STEP).map(([step, hash]) => [hash, step as Step]));
+
+/** Pasos en los que la tarjeta se mira sola y el color se elige solo para verla. */
+export const BROWSE_STEPS: Step[] = ['entrada', 'intencion'];
+
+export const totalCount = (counts: Record<CardColor, number>) => counts.negro + counts.blanco;
 
 /** La personalización solo existe para "Para mi negocio". */
 export function stepsFor(intent: Intent | null): Step[] {
@@ -59,7 +72,7 @@ export function isComplete(state: FlowState, step: Step): boolean {
     case 'intencion':
       return state.intent !== null;
     case 'cantidad':
-      return state.intent === 'negocio' || state.variantId !== null;
+      return state.intent === 'negocio' ? totalCount(state.counts) > 0 : state.packSize !== null && state.packColor !== null;
     case 'personaliza':
       return state.linkLater || validateGoogleLink(state.link) === 'ok';
     case 'resumen':
@@ -92,13 +105,33 @@ export function validateGoogleLink(raw: string): LinkCheck {
 type Listener = (state: FlowState, previous: FlowState) => void;
 
 export function createFlow() {
-  let state: FlowState = { step: 'entrada', intent: null, variantId: null, quantity: 1, link: '', linkLater: false };
+  let state: FlowState = {
+    step: 'entrada',
+    intent: null,
+    counts: { negro: 1, blanco: 0 },
+    packSize: null,
+    packColor: null,
+    mixNegras: 0,
+    preview: 'negro',
+    link: '',
+    linkLater: false,
+  };
   const listeners = new Set<Listener>();
 
   function set(patch: Partial<FlowState>) {
     const previous = state;
-    // Cambiar de intención deja sin sentido la cantidad y el link elegidos.
-    const reset = patch.intent && patch.intent !== state.intent ? { variantId: null, quantity: 1, link: '', linkLater: false } : {};
+    // Cambiar de intención deja sin sentido la cantidad y el link elegidos. Se arranca con el color que estaba mirando.
+    const reset: Partial<FlowState> =
+      patch.intent && patch.intent !== state.intent
+        ? {
+            counts: { negro: 0, blanco: 0, [state.preview]: 1 },
+            packSize: null,
+            packColor: null,
+            mixNegras: 0,
+            link: '',
+            linkLater: false,
+          }
+        : {};
     state = { ...state, ...reset, ...patch };
     listeners.forEach((fn) => fn(state, previous));
   }

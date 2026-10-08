@@ -14,7 +14,7 @@ const res = await fetch(`https://${domain}/api/${version}/graphql.json`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    query: `query($h: String!) { product(handle: $h) { variants(first: 20) { nodes { id title availableForSale price { amount currencyCode } } } } }`,
+    query: `query($h: String!) { product(handle: $h) { variants(first: 20) { nodes { id title availableForSale price { amount currencyCode } selectedOptions { name value } } } } }`,
     variables: { h: handle },
   }),
 });
@@ -34,6 +34,7 @@ const out = {
     availableForSale: v.availableForSale,
     price: v.price.amount,
     currencyCode: v.price.currencyCode,
+    selectedOptions: v.selectedOptions,
   })),
 };
 writeFileSync(new URL('../src/shop/variants.fallback.json', import.meta.url), JSON.stringify(out, null, 2) + '\n');

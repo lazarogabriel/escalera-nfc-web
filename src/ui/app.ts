@@ -1,10 +1,22 @@
 // Encabezado, pasos del flujo, barra de compra y panel de ayuda.
 
 import { content as c, fill } from '../content/content.es-MX';
-import { buildCheckoutUrl, hasVolumeDiscount, pricePerCard, type Catalog, type Pack } from '../shop/shopify';
-import { stepsFor, validateGoogleLink, type Flow, type FlowState, type Intent, type Step } from '../state/flow';
+import {
+  buildCheckoutUrl,
+  CARD_COLORS,
+  hasVolumeDiscount,
+  pricePerCard,
+  type CardColor,
+  type Catalog,
+  type CheckoutLine,
+  type PackColor,
+} from '../shop/shopify';
+import { stepsFor, totalCount, validateGoogleLink, type Flow, type FlowState, type Intent, type Step } from '../state/flow';
 import type { CardStage } from '../three/stage';
-import cardThumb from '../assets/card/card-front-1024.webp';
+import negroThumb from '../assets/card/card-negro-256.webp';
+import blancoThumb from '../assets/card/card-blanco-256.webp';
+import negroStill from '../assets/card/card-negro-1024.webp';
+import blancoStill from '../assets/card/card-blanco-1024.webp';
 import payVisa from '../assets/pay/visa.svg';
 import payMaster from '../assets/pay/master.svg';
 import payAmex from '../assets/pay/american_express.svg';
@@ -29,18 +41,33 @@ const EXTERNAL = { target: '_blank', rel: 'noopener' };
 
 const INTENT_ICONS: Record<Intent, IconName> = { negocio: 'store', reventa: 'box' };
 const MAX_NEGOCIO = 3;
+const THUMBS: Record<CardColor, string> = { negro: negroThumb, blanco: blancoThumb };
+const STILLS: Record<CardColor, string> = { negro: negroStill, blanco: blancoStill };
+const PACK_COLORS: PackColor[] = ['negro', 'blanco', 'mixto'];
+const other = (color: CardColor): CardColor => (color === 'negro' ? 'blanco' : 'negro');
 
-/** Lo que se va a comprar: negocio lleva N tarjetas sueltas; reventa, un pack. */
-interface Line {
-  pack: Pack;
-  quantity: number;
+/** Lo que se va a comprar: negocio lleva tarjetas sueltas de cada color; reventa, un pack. */
+interface Order {
+  lines: CheckoutLine[];
+  /** Tarjetas de cada color. */
+  counts: Record<CardColor, number>;
   cards: number;
   total: number;
+  available: boolean;
+}
+
+/** Pack mixto: de a 1 en los packs chicos y de a 5 en los grandes. Nunca todas de un color. */
+const mixStep = (size: number) => (size <= 30 ? 1 : 5);
+function clampMix(size: number, negras: number): number {
+  const step = mixStep(size);
+  return Math.min(size - step, Math.max(step, Math.round(negras / step) * step));
 }
 
 export interface AppDeps {
   root: HTMLElement;
   header: HTMLElement;
+  /** Vitrina de la tarjeta: ahí va el selector de color. */
+  showcase: HTMLElement;
   flow: Flow;
   catalog: () => Promise<Catalog>;
   stage: () => CardStage | null;
@@ -56,7 +83,7 @@ interface PrimaryAction {
 
 const isNode = (n: Node | null): n is Node => n !== null;
 
-export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: AppDeps) {
+export function mountApp({ root, header, showcase, flow, catalog: loadCatalog, stage }: AppDeps) {
   let catalogState: CatalogState = { status: 'loading' };
   let error = '';
   let paying = false;
@@ -71,6 +98,9 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     h('a', { class: 'logo-link', href: '#/', 'aria-label': c.brand }, logo()),
   );
   root.append(main, bar, renderFooter());
+  const colorSwitch = renderColorSwitch();
+  showcase.append(colorSwitch);
+  const still = showcase.querySelector<HTMLImageElement>('.card-still');
 
   // Móvil: al bajar, la vitrina fija se achica para dejar lugar a la compra sin dejar de mostrar la tarjeta.
   const onScroll = () => document.documentElement.classList.toggle('compact', window.scrollY > 12);
@@ -93,18 +123,74 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   }
 
   const packs = () => (catalogState.status === 'ready' ? catalogState.catalog.packs : []);
-  const singlePack = () => packs().find((p) => p.cards === 1) ?? null;
+  const variant = (cards: number, color: PackColor) => packs().find((p) => p.cards === cards && p.color === color) ?? null;
+  const singles = () => packs().filter((p) => p.cards === 1 && p.color !== 'mixto');
   const resalePacks = () => packs().filter((p) => p.cards > 1);
+  const resaleSizes = () => [...new Set(resalePacks().map((p) => p.cards))].sort((a, b) => a - b);
+  const hasMix = () => resalePacks().some((p) => p.color === 'mixto');
   const cardsText = (n: number) => cardsLabel(n, c.quantity.oneCard, c.quantity.cards);
   const totalText = (amount: number) => fill(c.quantity.total, { total: money(amount) });
 
-  function lineOf(s: FlowState): Line | null {
+  /** "2 negras y 1 blanca", "3 negras". */
+  function colorsText(counts: Record<CardColor, number>): string {
+    const parts = CARD_COLORS.filter((color) => counts[color] > 0).map((color) =>
+      cardsLabel(counts[color], c.colors.one[color], c.colors.many[color]).replace('{n}', String(counts[color])),
+    );
+    return parts.length === 2 ? fill(c.colors.and, { a: parts[0], b: parts[1] }) : (parts[0] ?? '');
+  }
+
+  /** Tarjetas de cada color en un pack de reventa. */
+  function packCounts(size: number, color: PackColor, mixNegras: number): Record<CardColor, number> {
+    const negras = color === 'negro' ? size : color === 'mixto' ? clampMix(size, mixNegras) : 0;
+    return { negro: negras, blanco: size - negras };
+  }
+
+  function orderOf(s: FlowState): Order | null {
     if (s.intent === 'negocio') {
-      const pack = singlePack();
-      return pack && { pack, quantity: s.quantity, cards: s.quantity, total: pack.price * s.quantity };
+      const lines = CARD_COLORS.filter((color) => s.counts[color] > 0).map((color) => ({ pack: variant(1, color), quantity: s.counts[color] }));
+      if (!lines.length || lines.some((l) => !l.pack)) return null;
+      const ready = lines as CheckoutLine[];
+      return {
+        lines: ready,
+        counts: s.counts,
+        cards: totalCount(s.counts),
+        total: ready.reduce((sum, l) => sum + l.pack.price * l.quantity, 0),
+        available: ready.every((l) => l.pack.available),
+      };
     }
-    const pack = resalePacks().find((p) => p.variantId === s.variantId);
-    return pack ? { pack, quantity: 1, cards: pack.cards, total: pack.price } : null;
+    if (!s.packSize || !s.packColor) return null;
+    const pack = variant(s.packSize, s.packColor);
+    if (!pack) return null;
+    return {
+      lines: [{ pack, quantity: 1 }],
+      counts: packCounts(s.packSize, s.packColor, s.mixNegras),
+      cards: pack.cards,
+      total: pack.price,
+      available: pack.available,
+    };
+  }
+
+  /** Texto corto del pedido: "2 negras y 1 blanca" o "Pack de 30: 15 negras y 15 blancas". */
+  function orderText(s: FlowState, order: Order): string {
+    if (s.intent === 'negocio') return colorsText(order.counts);
+    return fill(c.summary.pack[s.packColor!], { n: order.cards, mezcla: colorsText(order.counts) });
+  }
+
+  /** Color de la tarjeta de arriba: el que está mirando, si está en el pedido. */
+  function topColor(s: FlowState, order: Order | null): CardColor {
+    if (!order || s.step === 'entrada' || s.step === 'intencion') return s.preview;
+    return order.counts[s.preview] > 0 ? s.preview : other(s.preview);
+  }
+
+  /** Lleva el pedido a la tarjeta 3D (o a la imagen fija si no hay 3D). */
+  function syncShowcase(s: FlowState) {
+    const order = orderOf(s);
+    const top = topColor(s, order);
+    stage()?.setStep(s.step);
+    stage()?.setStack(order ? order.counts : { negro: 0, blanco: 0, [top]: 1 });
+    stage()?.setColor(top);
+    if (still && !still.src.endsWith(STILLS[top])) still.src = STILLS[top];
+    colorSwitch.querySelectorAll<HTMLInputElement>('input').forEach((input) => (input.checked = input.value === s.preview));
   }
 
   function render(s: FlowState) {
@@ -122,9 +208,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     main.replaceChildren(...view(s).filter(isNode));
     if (focusKey) main.querySelector<HTMLElement>(focusKey)?.focus({ preventScroll: true });
     renderBar(s);
-    const line = lineOf(s);
-    stage()?.setStep(s.step);
-    if (line) stage()?.setCount(line.cards);
+    syncShowcase(s);
   }
 
   function view(s: FlowState): (Node | null)[] {
@@ -151,9 +235,16 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
       .sort((a, b) => a - b)[0];
   }
 
+  /** Precio de una tarjeta suelta: el más bajo entre los colores (deberían costar lo mismo). */
+  function singlePrice(): number | undefined {
+    return singles()
+      .map((p) => p.price)
+      .sort((a, b) => a - b)[0];
+  }
+
   function entryPrice(): string | null {
-    const single = singlePack();
-    if (single) return fill(c.entry.price, { precio: money(single.price) });
+    const single = singlePrice();
+    if (single !== undefined) return fill(c.entry.price, { precio: money(single) });
     const from = resaleFrom();
     return from !== undefined ? fill(c.entry.resaleFrom, { desde: money(from) }) : null;
   }
@@ -167,6 +258,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
       h('h1', {}, c.entry.title),
       h('p', { class: 'lead' }, c.entry.lead),
       h('p', { class: 'note' }, c.entry.size),
+      h('p', { class: 'colors-line' }, h('span', { class: 'dots', 'aria-hidden': 'true' }, swatch('negro'), swatch('blanco')), c.entry.colors),
       catalogState.status === 'ready'
         ? h(
             'div',
@@ -175,7 +267,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
             h('span', { class: `stock ${anyAvailable ? 'in' : 'out'}` }, anyAvailable ? c.entry.available : c.entry.soldOut),
           )
         : null,
-      singlePack() && from !== undefined ? h('p', { class: 'note money' }, fill(c.entry.resaleFrom, { desde: money(from) })) : null,
+      singles().length && from !== undefined ? h('p', { class: 'note money' }, fill(c.entry.resaleFrom, { desde: money(from) })) : null,
       h('p', { class: 'free-shipping' }, icon('truck'), c.entry.freeShipping),
       h('p', { class: 'note' }, t(c.entry.priceNote)),
       catalogNotice(),
@@ -226,62 +318,210 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     ];
   }
 
+  /** Negocio: un contador por color, con miniatura. El total de las dos no pasa de MAX_NEGOCIO. */
   function singleCards(s: FlowState): (Node | null)[] {
-    const single = singlePack();
-    primary = { label: c.actions.addLink, run: () => advance(singlePack()?.available === true, c.states.allSoldOut) };
+    primary = { label: c.actions.addLink, run: () => advance(orderOf(flow.state)?.available === true, c.states.allSoldOut) };
     if (catalogState.status !== 'ready') return [];
-    if (!single?.available) return [h('p', { class: 'notice', role: 'alert' }, c.states.allSoldOut)];
-    const q = s.quantity;
-    const setQuantity = (n: number) => flow.update({ quantity: Math.min(MAX_NEGOCIO, Math.max(1, n)) });
-    return [
-      h(
+    if (!singles().some((p) => p.available)) return [h('p', { class: 'notice', role: 'alert' }, c.states.allSoldOut)];
+    const total = totalCount(s.counts);
+    const order = orderOf(s);
+    const setCount = (color: CardColor, n: number) => {
+      const counts = { ...s.counts, [color]: n };
+      if (totalCount(counts) < 1 || totalCount(counts) > MAX_NEGOCIO || n < 0) return;
+      // Al sumar se muestra ese color arriba; al quitar el último de un color, se ve el otro.
+      flow.update({ counts, preview: n > 0 ? color : other(color) });
+    };
+    const rows = CARD_COLORS.map((color) => {
+      const pack = variant(1, color);
+      const usable = pack?.available === true;
+      const q = s.counts[color];
+      return h(
         'div',
-        { class: 'stepper-card' },
+        { class: `color-row${q > 0 && s.preview === color ? ' is-top' : ''}${usable ? '' : ' is-out'}` },
         h(
-          'div',
-          { class: 'stepper', role: 'group', 'aria-label': c.quantity.title },
-          h('button', { type: 'button', id: 'menos', class: 'stepper-btn', 'aria-label': c.quantity.less, disabled: q <= 1, onClick: () => setQuantity(q - 1) }, icon('minus')),
-          h('output', { class: 'stepper-value', 'aria-live': 'polite' }, cardsText(q)),
-          h('button', { type: 'button', id: 'mas', class: 'stepper-btn', 'aria-label': c.quantity.more, disabled: q >= MAX_NEGOCIO, onClick: () => setQuantity(q + 1) }, icon('plus')),
+          'button',
+          {
+            type: 'button',
+            class: 'color-peek',
+            'aria-label': c.colors.names[color],
+            'aria-pressed': String(s.preview === color),
+            onClick: () => flow.update({ preview: color }),
+          },
+          h('img', { src: THUMBS[color], alt: '', width: 56, height: 56 }),
         ),
         h(
           'div',
-          { class: 'stepper-price' },
-          h('span', { class: 'note money' }, fill(c.quantity.unitPrice, { precio: money(single.price) })),
-          h('strong', { class: 'stepper-total money' }, totalText(single.price * q)),
+          { class: 'color-row-name' },
+          h('strong', {}, c.colors.names[color]),
+          h('span', { class: 'note money' }, usable ? fill(c.quantity.unitPrice, { precio: money(pack.price) }) : c.quantity.colorSoldOut),
+        ),
+        h(
+          'div',
+          { class: 'stepper', role: 'group', 'aria-label': c.colors.names[color] },
+          h('button', {
+            type: 'button',
+            id: `menos-${color}`,
+            class: 'stepper-btn',
+            'aria-label': c.quantity.less[color],
+            disabled: q <= 0 || total <= 1,
+            onClick: () => setCount(color, q - 1),
+          }, icon('minus')),
+          h('output', { class: 'stepper-value', 'aria-live': 'polite' }, String(q)),
+          h('button', {
+            type: 'button',
+            id: `mas-${color}`,
+            class: 'stepper-btn',
+            'aria-label': c.quantity.more[color],
+            disabled: !usable || total >= MAX_NEGOCIO,
+            onClick: () => setCount(color, q + 1),
+          }, icon('plus')),
+        ),
+      );
+    });
+    return [
+      h(
+        'div',
+        { class: 'color-rows' },
+        ...rows,
+        h(
+          'div',
+          { class: 'color-rows-total' },
+          h('span', {}, cardsText(total)),
+          order ? h('strong', { class: 'stepper-total money' }, totalText(order.total)) : null,
         ),
       ),
       h('p', { class: 'note' }, c.quantity.maxNote),
     ];
   }
 
+  /** Reventa: tamaño del pack, color (negras, blancas o mixto) y, si es mixto, cuántas negras. */
   function resale(s: FlowState): (Node | null)[] {
-    const list = resalePacks();
-    primary = { label: c.actions.review, run: () => advance(lineOf(flow.state)?.pack.available === true, c.quantity.errorEmpty) };
+    const sizes = resaleSizes();
+    primary = {
+      label: c.actions.review,
+      run: () => {
+        const st = flow.state;
+        if (!st.packSize) return advance(false, c.quantity.errorEmpty);
+        if (!st.packColor) return advance(false, c.quantity.errorColor);
+        advance(orderOf(st)?.available === true, c.summary.soldOut);
+      },
+    };
     const { min, max } = c.quantity.resaleRange;
-    const tiles = list.map((p) => {
+    // Cada tamaño se muestra con el precio del color elegido (o el que esté mirando).
+    const shownColor = s.packColor ?? s.preview;
+    const packOf = (size: number) =>
+      variant(size, shownColor) ?? resalePacks().find((p) => p.cards === size && p.available) ?? resalePacks().find((p) => p.cards === size)!;
+    const shownPacks = sizes.map(packOf);
+    const selectSize = (size: number) => {
+      const color = s.packColor ?? s.preview;
+      flow.update({ packSize: size, packColor: color, mixNegras: clampMix(size, s.mixNegras || size / 2) });
+    };
+    const tiles = shownPacks.map((p) => {
+      const available = resalePacks().some((v) => v.cards === p.cards && v.available);
       const profitMax = max * p.cards - p.price;
       return option({
         name: 'pack',
-        value: p.variantId,
-        checked: s.variantId === p.variantId,
-        disabled: !p.available,
+        value: String(p.cards),
+        checked: s.packSize === p.cards,
+        disabled: !available,
         label: cardsText(p.cards),
-        aside: p.available ? totalText(p.price) : c.quantity.soldOut,
-        detail: p.available ? fill(c.quantity.perCard, { porTarjeta: money(pricePerCard(p)) }) : undefined,
+        aside: available ? totalText(p.price) : c.quantity.soldOut,
+        detail: available ? fill(c.quantity.perCard, { porTarjeta: money(pricePerCard(p)) }) : undefined,
         extra:
-          p.available && profitMax > 0
+          available && profitMax > 0
             ? fill(c.quantity.profit, { desde: money(Math.max(0, min * p.cards - p.price)), hasta: money(profitMax) })
             : undefined,
         tile: true,
-        onSelect: () => flow.update({ variantId: p.variantId }),
+        onSelect: () => selectSize(p.cards),
       });
     });
+
+    const colors = PACK_COLORS.filter((color) => color !== 'mixto' || hasMix());
+    const colorUsable = (color: PackColor) =>
+      s.packSize ? variant(s.packSize, color)?.available === true : resalePacks().some((p) => p.color === color && p.available);
+    const colorTiles = colors.map((color) =>
+      option({
+        name: 'color-pack',
+        value: color,
+        checked: s.packColor === color,
+        disabled: !colorUsable(color),
+        media: packVisual(color),
+        label: c.quantity.packColors[color].label,
+        detail: colorUsable(color) ? c.quantity.packColors[color].detail : c.quantity.colorSoldOut,
+        swatch: true,
+        onSelect: () =>
+          flow.update({
+            packColor: color,
+            preview: color === 'mixto' ? s.preview : color,
+            mixNegras: s.packSize ? clampMix(s.packSize, s.mixNegras || s.packSize / 2) : s.mixNegras,
+          }),
+      }),
+    );
+
     return [
-      list.length ? h('fieldset', { class: 'tiles' }, h('legend', { class: 'sr-only' }, c.quantity.title), ...tiles) : null,
-      hasVolumeDiscount(list) ? h('p', { class: 'note' }, c.quantity.volumeNote) : null,
-      list.length ? h('p', { class: 'note' }, fill(c.quantity.profitNote, { min: money(min), max: money(max) })) : null,
+      sizes.length ? h('h2', { class: 'pick-title' }, c.quantity.sizeTitle) : null,
+      sizes.length ? h('fieldset', { class: 'tiles' }, h('legend', { class: 'sr-only' }, c.quantity.sizeTitle), ...tiles) : null,
+      hasVolumeDiscount(shownPacks) ? h('p', { class: 'note' }, c.quantity.volumeNote) : null,
+      sizes.length ? h('p', { class: 'note' }, fill(c.quantity.profitNote, { min: money(min), max: money(max) })) : null,
+      sizes.length ? h('h2', { class: 'pick-title' }, c.quantity.colorTitle) : null,
+      sizes.length
+        ? h('fieldset', { class: `swatches cols-${colors.length}` }, h('legend', { class: 'sr-only' }, c.quantity.colorTitle), ...colorTiles)
+        : null,
+      s.packColor === 'mixto' && s.packSize ? mixer(s, s.packSize) : null,
     ];
+  }
+
+  /** Pack mixto: un deslizador cuyo riel muestra la proporción de negras y blancas. */
+  function mixer(s: FlowState, size: number) {
+    const step = mixStep(size);
+    const value = clampMix(size, s.mixNegras);
+    const output = h('output', { class: 'mix-value money', for: 'mezcla' });
+    const range = h('input', {
+      id: 'mezcla',
+      type: 'range',
+      min: step,
+      max: size - step,
+      step,
+      value,
+      'aria-valuetext': colorsText(packCounts(size, 'mixto', value)),
+    });
+    const box = h(
+      'div',
+      { class: 'mix' },
+      h('div', { class: 'mix-head' }, h('label', { for: 'mezcla', class: 'field-label' }, c.quantity.mixLabel), output),
+      range,
+      h('p', { class: 'note' }, c.quantity.mixNote),
+    );
+    const paint = (negras: number) => {
+      const counts = packCounts(size, 'mixto', negras);
+      output.textContent = colorsText(counts);
+      range.setAttribute('aria-valuetext', output.textContent);
+      // El corte negro/blanco queda bajo el centro del control (30 px de ancho).
+      const f = (negras - step) / Math.max(1, size - 2 * step);
+      box.style.setProperty('--mix', `calc(15px + (100% - 30px) * ${f})`);
+    };
+    paint(value);
+    // Sin re-render mientras arrastra: perdería el dedo. Se actualizan el texto, la barra y la pila.
+    range.addEventListener('input', () => {
+      const negras = clampMix(size, Number(range.value));
+      flow.assign({ mixNegras: negras });
+      paint(negras);
+      renderBar(flow.state);
+      stage()?.setStack(packCounts(size, 'mixto', negras));
+    });
+    return box;
+  }
+
+  /** Miniatura del color del pack: la tarjeta, o dos en abanico si es mixto. */
+  function packVisual(color: PackColor): Node {
+    const thumb = (cc: CardColor, cls = '') => h('img', { class: `thumb ${cls}`, src: THUMBS[cc], alt: '', width: 56, height: 56 });
+    return color === 'mixto'
+      ? h('span', { class: 'pack-visual mixed' }, thumb('blanco', 'back'), thumb('negro', 'front'))
+      : h('span', { class: 'pack-visual' }, thumb(color));
+  }
+
+  function swatch(color: CardColor) {
+    return h('span', { class: `swatch ${color}` });
   }
 
   // Tu link
@@ -342,8 +582,8 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   // Resumen: como un carrito.
 
   function summary(s: FlowState) {
-    const line = lineOf(s);
-    primary = { label: c.actions.pay, run: () => pay(flow.state), disabled: line?.pack.available !== true };
+    const order = orderOf(s);
+    primary = { label: c.actions.pay, run: () => pay(flow.state), disabled: order?.available !== true };
     const row = (label: string, value: Node | string, action?: [string, Step]) =>
       h(
         'div',
@@ -356,7 +596,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
 
     return [
       titleWithBack(c.summary.title),
-      line && !line.pack.available
+      order && !order.available
         ? h(
             'p',
             { class: 'error', role: 'alert' },
@@ -368,20 +608,12 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
       h(
         'section',
         { class: 'order' },
-        line
-          ? h(
-              'div',
-              { class: 'order-item' },
-              h('img', { src: cardThumb, alt: '', width: 64, height: 64, loading: 'lazy' }),
-              h('div', {}, h('p', { class: 'order-title' }, c.meta.title), h('p', { class: 'note' }, cardsText(line.cards))),
-              h('p', { class: 'order-price money' }, totalText(line.total)),
-            )
-          : null,
+        ...(order ? orderItems(s, order) : []),
         h(
           'dl',
           { class: 'summary' },
           row(c.summary.rows.intent, c.intent.options[s.intent!].label, [c.actions.changeIntent, 'intencion']),
-          line ? row(c.summary.rows.quantity, cardsText(line.cards), [c.actions.changeQuantity, 'cantidad']) : null,
+          order ? row(c.summary.rows.cards, orderText(s, order), [c.actions.changeCards, 'cantidad']) : null,
           s.intent === 'negocio'
             ? row(
                 c.summary.rows.link,
@@ -390,7 +622,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
               )
             : null,
           row(c.summary.rows.shipping, c.summary.rows.shippingValue),
-          line ? row(c.summary.rows.total, h('strong', { class: 'money total' }, totalText(line.total))) : null,
+          order ? row(c.summary.rows.total, h('strong', { class: 'money total' }, totalText(order.total))) : null,
         ),
         h('p', { class: 'secure' }, icon('lock'), c.summary.secure),
         h('ul', { class: 'pay-chips', 'aria-label': c.summary.paymentTitle }, ...c.summary.paymentChips.map((m) =>
@@ -406,12 +638,32 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     ];
   }
 
+  /** Renglones del resumen: uno por color en negocio; uno por pack en reventa. */
+  function orderItems(s: FlowState, order: Order): Node[] {
+    const item = (media: Node, title: string, detail: string, total: number) =>
+      h(
+        'div',
+        { class: 'order-item' },
+        media,
+        h('div', {}, h('p', { class: 'order-title' }, title), h('p', { class: 'note' }, detail)),
+        h('p', { class: 'order-price money' }, totalText(total)),
+      );
+    if (s.intent === 'reventa') {
+      return [item(packVisual(s.packColor!), fill(c.summary.packItem, { n: order.cards }), colorsText(order.counts), order.total)];
+    }
+    return order.lines.map((l) => {
+      const color = l.pack.color as CardColor;
+      return item(packVisual(color), c.colors.item[color], cardsText(l.quantity), l.pack.price * l.quantity);
+    });
+  }
+
   async function pay(s: FlowState) {
-    const line = lineOf(s);
-    if (paying || !line?.pack.available || !s.intent) return;
+    const order = orderOf(s);
+    if (paying || !order?.available || !s.intent) return;
     const hasLink = s.intent === 'negocio' && !s.linkLater && validateGoogleLink(s.link) === 'ok';
-    const url = buildCheckoutUrl(line.pack, line.quantity, {
+    const url = buildCheckoutUrl(order.lines, {
       intencion: c.intent.options[s.intent].label,
+      colores: colorsText(order.counts),
       link_google: hasLink ? s.link : undefined,
       link_por_whatsapp: s.intent === 'negocio' && !hasLink ? 'Sí' : undefined,
     });
@@ -424,11 +676,12 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   // Barra de compra: precio a la izquierda, botón principal a la derecha.
 
   function renderBar(s: FlowState) {
-    const line = lineOf(s);
+    const order = orderOf(s);
     if (s.step === 'entrada') {
       barInfo.replaceChildren(h('span', { class: 'bar-label' }, entryPrice() ?? c.states.loading));
-    } else if (line) {
-      barInfo.replaceChildren(h('span', { class: 'bar-label' }, cardsText(line.cards)), h('strong', { class: 'bar-total money' }, totalText(line.total)));
+    } else if (order) {
+      // Corto para que entre en una línea: solo los colores ("15 negras y 15 blancas").
+      barInfo.replaceChildren(h('span', { class: 'bar-label' }, colorsText(order.counts)), h('strong', { class: 'bar-total money' }, totalText(order.total)));
     } else {
       barInfo.replaceChildren(h('span', { class: 'bar-label' }, c.bar.empty));
     }
@@ -455,16 +708,19 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     checked: boolean;
     disabled?: boolean;
     icon?: IconName;
+    /** Imagen arriba de la etiqueta (colores del pack). */
+    media?: Node;
     label: string;
     detail?: string;
     extra?: string;
     aside?: string;
     tile?: boolean;
+    swatch?: boolean;
     onSelect: () => void;
   }) {
     return h(
       'label',
-      { class: o.tile ? 'tile' : 'choice' },
+      { class: o.swatch ? 'tile swatch-tile' : o.tile ? 'tile' : 'choice' },
       h('input', {
         type: 'radio',
         name: o.name,
@@ -477,6 +733,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
         },
       }),
       o.icon ? h('span', { class: 'choice-icon' }, icon(o.icon)) : null,
+      o.media ?? null,
       h(
         'span',
         { class: 'choice-body' },
@@ -518,6 +775,30 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     );
   }
 
+  /** Selector de color sobre la vitrina: solo para mirar la tarjeta en los pasos en que se ve sola. */
+  function renderColorSwitch() {
+    return h(
+      'fieldset',
+      { class: 'color-switch' },
+      h('legend', { class: 'sr-only' }, c.colors.switchLabel),
+      ...CARD_COLORS.map((color) =>
+        h(
+          'label',
+          {},
+          h('input', {
+            type: 'radio',
+            name: 'color-vista',
+            value: color,
+            checked: flow.state.preview === color,
+            onChange: () => flow.update({ preview: color }),
+          }),
+          swatch(color),
+          h('span', {}, c.colors.names[color]),
+        ),
+      ),
+    );
+  }
+
   function renderHelp() {
     const faq = h('div', { class: 'faq' });
     const dialog = h(
@@ -542,7 +823,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     );
     dialog.addEventListener('click', (e) => e.target === dialog && dialog.close());
     // Las preguntas se arman al abrir: la de "1 tarjeta" depende de los packs de Shopify.
-    const singleCard = () => singlePack() !== null;
+    const singleCard = () => singles().length > 0;
     new MutationObserver(() => {
       if (!dialog.open) return;
       faq.replaceChildren(

@@ -10,6 +10,7 @@ let stage: CardStage | null = null;
 mountApp({
   root: document.getElementById('app')!,
   header: document.querySelector<HTMLElement>('header.top')!,
+  showcase: document.querySelector<HTMLElement>('.stage')!,
   flow,
   catalog: loadCatalog,
   stage: () => stage,
@@ -24,10 +25,14 @@ if (canvas) {
       canvas,
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
       lowPower: isLowPower(),
+      color: flow.state.preview,
     });
     if (!stage) return;
     document.documentElement.classList.add('has-3d');
-    stage.setStep(flow.state.step);
+    // Tocar o deslizar la tarjeta muestra el otro color (solo en los pasos en que se mira sola).
+    stage.onCardTap(() => flow.update({ preview: flow.state.preview === 'negro' ? 'blanco' : 'negro' }));
+    // Re-render: el 3D recibe el paso, el color y la pila actuales.
+    flow.update({});
     if (flow.state.step === 'entrada') stage.playTap();
   };
   'requestIdleCallback' in window ? requestIdleCallback(() => void start(), { timeout: 1500 }) : setTimeout(start, 300);

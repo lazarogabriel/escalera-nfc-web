@@ -37,6 +37,11 @@ Todas las preguntas quedaron respondidas el 2026-10-08. Lo único que falta ante
 ## Tareas en Shopify (bloquean la publicación)
 
 - ~~Variantes y precios~~ Hecho (2026-10-08): 1 tarjeta $449, 10/30/50/100 tarjetas con los precios del cliente. Respaldo actualizado. Si cambia un precio: `npm run update:fallback`.
+- **Colores (2026-10-08):** la opción "Color" ya existe con Negro y Blanco. Falta:
+  - Agregar el valor **Mixto** y borrar la combinación "1 / Mixto".
+  - Corregir los precios de las variantes Negro: hoy todas están en $1,590. Tienen que quedar igual que las Blanco ($449, $1,590, $4,470, $6,950, $12,900), y las Mixto también.
+  - Después, correr `npm run update:fallback` para refrescar el respaldo.
+  - Opcional: asignar a cada variante la foto de su color.
 - Corregir el peso de cada variante: 40 g por tarjeta (1 tarjeta 40 g, 10 tarjetas 400 g, 30 tarjetas 1.2 kg, 50 tarjetas 2 kg, 100 tarjetas 4 kg), más el empaque.
 - Configurar el envío gratis a todo México.
 - Activar Shopify Payments con tarjeta de crédito y débito, Apple Pay y Google Pay. Dejar apagados OXXO y los meses sin intereses.
@@ -46,4 +51,4 @@ Todas las preguntas quedaron respondidas el 2026-10-08. Lo único que falta ante
 
 ## Dónde ver el link de reseñas de cada pedido
 
-En el admin de Shopify → Pedidos → abrir el pedido. Arriba, en "Notas", aparece el uso ("Para mi negocio" o "Para revender") y el link de reseñas, o el aviso de que hay que escribirle por WhatsApp. Más abajo, en "Detalles adicionales", están los mismos datos por separado.
+En el admin de Shopify → Pedidos → abrir el pedido. Arriba, en "Notas", aparece el uso ("Para mi negocio" o "Para revender"), los colores ("2 negras y 1 blanca" o, en un pack mixto, "15 negras y 15 blancas") y el link de reseñas, o el aviso de que hay que escribirle por WhatsApp. Más abajo, en "Detalles adicionales", están los mismos datos por separado.
