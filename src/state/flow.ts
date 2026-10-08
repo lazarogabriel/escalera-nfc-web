@@ -2,12 +2,15 @@
 // Las elecciones viven solo en memoria: la página no guarda datos.
 
 export type Step = 'entrada' | 'intencion' | 'cantidad' | 'personaliza' | 'resumen';
-export type Intent = 'negocio' | 'sucursales' | 'reventa';
+export type Intent = 'negocio' | 'reventa';
 
 export interface FlowState {
   step: Step;
   intent: Intent | null;
+  /** Pack elegido. Solo en reventa; negocio compra la variante de 1 tarjeta. */
   variantId: string | null;
+  /** Tarjetas sueltas para negocio. */
+  quantity: number;
   link: string;
   linkLater: boolean;
 }
@@ -56,7 +59,7 @@ export function isComplete(state: FlowState, step: Step): boolean {
     case 'intencion':
       return state.intent !== null;
     case 'cantidad':
-      return state.variantId !== null;
+      return state.intent === 'negocio' || state.variantId !== null;
     case 'personaliza':
       return state.linkLater || validateGoogleLink(state.link) === 'ok';
     case 'resumen':
@@ -89,14 +92,14 @@ export function validateGoogleLink(raw: string): LinkCheck {
 type Listener = (state: FlowState, previous: FlowState) => void;
 
 export function createFlow() {
-  let state: FlowState = { step: 'entrada', intent: null, variantId: null, link: '', linkLater: false };
+  let state: FlowState = { step: 'entrada', intent: null, variantId: null, quantity: 1, link: '', linkLater: false };
   const listeners = new Set<Listener>();
 
   function set(patch: Partial<FlowState>) {
     const previous = state;
-    state = { ...state, ...patch };
-    // Cambiar de intención puede dejar sin sentido el link.
-    if (patch.intent && patch.intent !== 'negocio') state = { ...state, link: '', linkLater: false };
+    // Cambiar de intención deja sin sentido la cantidad y el link elegidos.
+    const reset = patch.intent && patch.intent !== state.intent ? { variantId: null, quantity: 1, link: '', linkLater: false } : {};
+    state = { ...state, ...reset, ...patch };
     listeners.forEach((fn) => fn(state, previous));
   }
 

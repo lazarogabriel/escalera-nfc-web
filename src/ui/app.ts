@@ -2,38 +2,41 @@
 
 import { content as c, fill } from '../content/content.es-MX';
 import { buildCheckoutUrl, hasVolumeDiscount, pricePerCard, type Catalog, type Pack } from '../shop/shopify';
-import { validateGoogleLink, type Flow, type FlowState, type Intent, type Step } from '../state/flow';
+import { stepsFor, validateGoogleLink, type Flow, type FlowState, type Intent, type Step } from '../state/flow';
 import type { CardStage } from '../three/stage';
 import cardThumb from '../assets/card/card-front-1024.webp';
 import payVisa from '../assets/pay/visa.svg';
 import payMaster from '../assets/pay/master.svg';
 import payAmex from '../assets/pay/american_express.svg';
-import payUnionPay from '../assets/pay/unionpay.svg';
 import payApple from '../assets/pay/apple_pay.svg';
 import payGoogle from '../assets/pay/google_pay.svg';
-import payShop from '../assets/pay/shopify_pay.svg';
-import payOxxo from '../assets/pay/oxxo.svg';
 
 // Íconos oficiales de Shopify (activemerchant/payment_icons).
 const PAY_ICONS: Record<string, string> = {
   Visa: payVisa,
   Mastercard: payMaster,
   'American Express': payAmex,
-  UnionPay: payUnionPay,
   'Apple Pay': payApple,
   'Google Pay': payGoogle,
-  'Shop Pay': payShop,
-  OXXO: payOxxo,
 };
 import { h, text } from './dom';
-import { money, packLabel, stackHeight } from './format';
+import { cardsLabel, money } from './format';
 import { icon, logo, socialIcon, type IconName, type SocialName } from './icons';
 
 const t = (s: string) => text(s, c.pending.label);
 const WHATSAPP_URL = `https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER}?text=${encodeURIComponent(c.help.whatsappMessage)}`;
 const EXTERNAL = { target: '_blank', rel: 'noopener' };
 
-const INTENT_ICONS: Record<Intent, IconName> = { negocio: 'store', sucursales: 'buildings', reventa: 'box' };
+const INTENT_ICONS: Record<Intent, IconName> = { negocio: 'store', reventa: 'box' };
+const MAX_NEGOCIO = 3;
+
+/** Lo que se va a comprar: negocio lleva N tarjetas sueltas; reventa, un pack. */
+interface Line {
+  pack: Pack;
+  quantity: number;
+  cards: number;
+  total: number;
+}
 
 export interface AppDeps {
   root: HTMLElement;
@@ -90,9 +93,19 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   }
 
   const packs = () => (catalogState.status === 'ready' ? catalogState.catalog.packs : []);
-  const selectedPack = (s: FlowState) => packs().find((p) => p.variantId === s.variantId) ?? null;
-  const labelOf = (p: Pack) => packLabel(p.cards, p.title, c.quantity.oneCard);
-  const totalOf = (p: Pack) => fill(c.quantity.total, { total: money(p.price) });
+  const singlePack = () => packs().find((p) => p.cards === 1) ?? null;
+  const resalePacks = () => packs().filter((p) => p.cards > 1);
+  const cardsText = (n: number) => cardsLabel(n, c.quantity.oneCard, c.quantity.cards);
+  const totalText = (amount: number) => fill(c.quantity.total, { total: money(amount) });
+
+  function lineOf(s: FlowState): Line | null {
+    if (s.intent === 'negocio') {
+      const pack = singlePack();
+      return pack && { pack, quantity: s.quantity, cards: s.quantity, total: pack.price * s.quantity };
+    }
+    const pack = resalePacks().find((p) => p.variantId === s.variantId);
+    return pack ? { pack, quantity: 1, cards: pack.cards, total: pack.price } : null;
+  }
 
   function render(s: FlowState) {
     document.documentElement.dataset.step = s.step;
@@ -109,9 +122,9 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     main.replaceChildren(...view(s).filter(isNode));
     if (focusKey) main.querySelector<HTMLElement>(focusKey)?.focus({ preventScroll: true });
     renderBar(s);
-    const pack = selectedPack(s);
+    const line = lineOf(s);
     stage()?.setStep(s.step);
-    if (pack) stage()?.setCount(pack.cards);
+    if (line) stage()?.setCount(line.cards);
   }
 
   function view(s: FlowState): (Node | null)[] {
@@ -131,32 +144,48 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
 
   // Entrada: ficha de producto.
 
-  function cheapestPerCard(): number | undefined {
-    return packs()
+  function resaleFrom(): number | undefined {
+    return resalePacks()
       .filter((p) => p.available)
       .map(pricePerCard)
       .sort((a, b) => a - b)[0];
   }
 
+  function entryPrice(): string | null {
+    const single = singlePack();
+    if (single) return fill(c.entry.price, { precio: money(single.price) });
+    const from = resaleFrom();
+    return from !== undefined ? fill(c.entry.resaleFrom, { desde: money(from) }) : null;
+  }
+
   function entry() {
     primary = { label: c.actions.buy, run: () => flow.next() };
-    const cheapest = cheapestPerCard();
+    const price = entryPrice();
+    const from = resaleFrom();
     const anyAvailable = packs().some((p) => p.available);
     return [
-      h('ul', { class: 'chips' }, ...c.entry.specs.map((spec) => h('li', {}, spec))),
       h('h1', {}, c.entry.title),
       h('p', { class: 'lead' }, c.entry.lead),
+      h('p', { class: 'note' }, c.entry.size),
       catalogState.status === 'ready'
         ? h(
             'div',
             { class: 'price-line' },
-            cheapest !== undefined ? h('p', { class: 'price money' }, fill(c.entry.priceFrom, { desde: money(cheapest) })) : null,
+            price ? h('p', { class: 'price money' }, price) : null,
             h('span', { class: `stock ${anyAvailable ? 'in' : 'out'}` }, anyAvailable ? c.entry.available : c.entry.soldOut),
           )
         : null,
+      singlePack() && from !== undefined ? h('p', { class: 'note money' }, fill(c.entry.resaleFrom, { desde: money(from) })) : null,
+      h('p', { class: 'free-shipping' }, icon('truck'), c.entry.freeShipping),
       h('p', { class: 'note' }, t(c.entry.priceNote)),
       catalogNotice(),
-      h('ul', { class: 'trust' }, ...c.entry.trust.map((item) => h('li', {}, icon(item.icon), h('span', {}, item.text)))),
+      h(
+        'ul',
+        { class: 'trust' },
+        ...c.entry.trust.map((item) =>
+          h('li', 'highlight' in item ? { class: 'highlight' } : {}, icon(item.icon), h('span', {}, item.text)),
+        ),
+      ),
       h('h2', {}, c.entry.stepsTitle),
       h('ol', { class: 'sequence' }, ...c.entry.steps.map((step) => h('li', {}, h('span', {}, step)))),
     ];
@@ -187,36 +216,71 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   // Cantidad
 
   function quantity(s: FlowState) {
-    const list = packs();
-    const pack = selectedPack(s);
-    primary = {
-      label: s.intent === 'negocio' ? c.actions.addLink : c.actions.review,
-      run: () => advance(selectedPack(flow.state)?.available === true, c.quantity.errorEmpty),
-    };
-    const tiles = list.map((p) =>
-      option({
+    return [
+      titleWithBack(c.quantity.title),
+      h('p', { class: 'lead' }, c.quantity.lead[s.intent!]),
+      catalogNotice(),
+      ...(s.intent === 'negocio' ? singleCards(s) : resale(s)),
+      h('p', { class: 'note' }, t(c.quantity.priceNote)),
+      errorLine(),
+    ];
+  }
+
+  function singleCards(s: FlowState): (Node | null)[] {
+    const single = singlePack();
+    primary = { label: c.actions.addLink, run: () => advance(singlePack()?.available === true, c.states.allSoldOut) };
+    if (catalogState.status !== 'ready') return [];
+    if (!single?.available) return [h('p', { class: 'notice', role: 'alert' }, c.states.allSoldOut)];
+    const q = s.quantity;
+    const setQuantity = (n: number) => flow.update({ quantity: Math.min(MAX_NEGOCIO, Math.max(1, n)) });
+    return [
+      h(
+        'div',
+        { class: 'stepper-card' },
+        h(
+          'div',
+          { class: 'stepper', role: 'group', 'aria-label': c.quantity.title },
+          h('button', { type: 'button', id: 'menos', class: 'stepper-btn', 'aria-label': c.quantity.less, disabled: q <= 1, onClick: () => setQuantity(q - 1) }, icon('minus')),
+          h('output', { class: 'stepper-value', 'aria-live': 'polite' }, cardsText(q)),
+          h('button', { type: 'button', id: 'mas', class: 'stepper-btn', 'aria-label': c.quantity.more, disabled: q >= MAX_NEGOCIO, onClick: () => setQuantity(q + 1) }, icon('plus')),
+        ),
+        h(
+          'div',
+          { class: 'stepper-price' },
+          h('span', { class: 'note money' }, fill(c.quantity.unitPrice, { precio: money(single.price) })),
+          h('strong', { class: 'stepper-total money' }, totalText(single.price * q)),
+        ),
+      ),
+      h('p', { class: 'note' }, c.quantity.maxNote),
+    ];
+  }
+
+  function resale(s: FlowState): (Node | null)[] {
+    const list = resalePacks();
+    primary = { label: c.actions.review, run: () => advance(lineOf(flow.state)?.pack.available === true, c.quantity.errorEmpty) };
+    const { min, max } = c.quantity.resaleRange;
+    const tiles = list.map((p) => {
+      const profitMax = max * p.cards - p.price;
+      return option({
         name: 'pack',
         value: p.variantId,
         checked: s.variantId === p.variantId,
         disabled: !p.available,
-        label: labelOf(p),
-        aside: p.available ? totalOf(p) : c.quantity.soldOut,
-        detail: p.available && p.cards > 1 ? fill(c.quantity.perCard, { porTarjeta: money(pricePerCard(p)) }) : undefined,
+        label: cardsText(p.cards),
+        aside: p.available ? totalText(p.price) : c.quantity.soldOut,
+        detail: p.available ? fill(c.quantity.perCard, { porTarjeta: money(pricePerCard(p)) }) : undefined,
+        extra:
+          p.available && profitMax > 0
+            ? fill(c.quantity.profit, { desde: money(Math.max(0, min * p.cards - p.price)), hasta: money(profitMax) })
+            : undefined,
         tile: true,
         onSelect: () => flow.update({ variantId: p.variantId }),
-      }),
-    );
+      });
+    });
     return [
-      titleWithBack(c.quantity.title),
-      h('p', { class: 'lead' }, c.quantity.lead[s.intent!]),
-      pack
-        ? h('p', { class: 'stack-height' }, icon('box'), fill(c.quantity.stackHeight, { pack: labelOf(pack), alto: stackHeight(pack.cards) }))
-        : null,
-      catalogNotice(),
       list.length ? h('fieldset', { class: 'tiles' }, h('legend', { class: 'sr-only' }, c.quantity.title), ...tiles) : null,
       hasVolumeDiscount(list) ? h('p', { class: 'note' }, c.quantity.volumeNote) : null,
-      h('p', { class: 'note' }, t(c.quantity.priceNote)),
-      errorLine(),
+      list.length ? h('p', { class: 'note' }, fill(c.quantity.profitNote, { min: money(min), max: money(max) })) : null,
     ];
   }
 
@@ -278,8 +342,8 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   // Resumen: como un carrito.
 
   function summary(s: FlowState) {
-    const pack = selectedPack(s);
-    primary = { label: c.actions.pay, run: () => pay(flow.state), disabled: pack?.available !== true };
+    const line = lineOf(s);
+    primary = { label: c.actions.pay, run: () => pay(flow.state), disabled: line?.pack.available !== true };
     const row = (label: string, value: Node | string, action?: [string, Step]) =>
       h(
         'div',
@@ -292,7 +356,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
 
     return [
       titleWithBack(c.summary.title),
-      pack && !pack.available
+      line && !line.pack.available
         ? h(
             'p',
             { class: 'error', role: 'alert' },
@@ -304,20 +368,20 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
       h(
         'section',
         { class: 'order' },
-        pack
+        line
           ? h(
               'div',
               { class: 'order-item' },
               h('img', { src: cardThumb, alt: '', width: 64, height: 64, loading: 'lazy' }),
-              h('div', {}, h('p', { class: 'order-title' }, c.meta.title), h('p', { class: 'note' }, labelOf(pack))),
-              h('p', { class: 'order-price money' }, totalOf(pack)),
+              h('div', {}, h('p', { class: 'order-title' }, c.meta.title), h('p', { class: 'note' }, cardsText(line.cards))),
+              h('p', { class: 'order-price money' }, totalText(line.total)),
             )
           : null,
         h(
           'dl',
           { class: 'summary' },
           row(c.summary.rows.intent, c.intent.options[s.intent!].label, [c.actions.changeIntent, 'intencion']),
-          pack ? row(c.summary.rows.quantity, labelOf(pack), [c.actions.changeQuantity, 'cantidad']) : null,
+          line ? row(c.summary.rows.quantity, cardsText(line.cards), [c.actions.changeQuantity, 'cantidad']) : null,
           s.intent === 'negocio'
             ? row(
                 c.summary.rows.link,
@@ -326,9 +390,8 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
               )
             : null,
           row(c.summary.rows.shipping, c.summary.rows.shippingValue),
-          pack ? row(c.summary.rows.total, h('strong', { class: 'money total' }, totalOf(pack))) : null,
+          line ? row(c.summary.rows.total, h('strong', { class: 'money total' }, totalText(line.total))) : null,
         ),
-        h('p', { class: 'note' }, t(c.summary.totalNote)),
         h('p', { class: 'secure' }, icon('lock'), c.summary.secure),
         h('ul', { class: 'pay-chips', 'aria-label': c.summary.paymentTitle }, ...c.summary.paymentChips.map((m) =>
           h('li', { title: m }, PAY_ICONS[m] ? h('img', { src: PAY_ICONS[m], alt: m, width: '38', height: '24' }) : m),
@@ -347,10 +410,10 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   }
 
   async function pay(s: FlowState) {
-    const pack = selectedPack(s);
-    if (paying || !pack?.available || !s.intent) return;
+    const line = lineOf(s);
+    if (paying || !line?.pack.available || !s.intent) return;
     const hasLink = s.intent === 'negocio' && !s.linkLater && validateGoogleLink(s.link) === 'ok';
-    const url = buildCheckoutUrl(pack, {
+    const url = buildCheckoutUrl(line.pack, line.quantity, {
       intencion: c.intent.options[s.intent].label,
       link_google: hasLink ? s.link : undefined,
       link_por_whatsapp: s.intent === 'negocio' && !hasLink ? 'Sí' : undefined,
@@ -364,16 +427,11 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
   // Barra de compra: precio a la izquierda, botón principal a la derecha.
 
   function renderBar(s: FlowState) {
-    const pack = selectedPack(s);
+    const line = lineOf(s);
     if (s.step === 'entrada') {
-      const cheapest = cheapestPerCard();
-      barInfo.replaceChildren(
-        cheapest !== undefined
-          ? h('span', { class: 'bar-label' }, fill(c.entry.priceFrom, { desde: money(cheapest) }))
-          : h('span', { class: 'bar-label' }, c.states.loading),
-      );
-    } else if (pack) {
-      barInfo.replaceChildren(h('span', { class: 'bar-label' }, labelOf(pack)), h('strong', { class: 'bar-total money' }, totalOf(pack)));
+      barInfo.replaceChildren(h('span', { class: 'bar-label' }, entryPrice() ?? c.states.loading));
+    } else if (line) {
+      barInfo.replaceChildren(h('span', { class: 'bar-label' }, cardsText(line.cards)), h('strong', { class: 'bar-total money' }, totalText(line.total)));
     } else {
       barInfo.replaceChildren(h('span', { class: 'bar-label' }, c.bar.empty));
     }
@@ -402,6 +460,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     icon?: IconName;
     label: string;
     detail?: string;
+    extra?: string;
     aside?: string;
     tile?: boolean;
     onSelect: () => void;
@@ -427,6 +486,7 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
         h('span', { class: 'choice-label' }, o.label),
         o.aside ? h('span', { class: 'choice-aside money' }, o.aside) : null,
         o.detail ? h('span', { class: 'choice-detail' }, o.detail) : null,
+        o.extra ? h('span', { class: 'choice-detail choice-extra' }, o.extra) : null,
       ),
       h('span', { class: 'choice-check' }, icon('check')),
     );
@@ -479,14 +539,13 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
         h('p', { class: 'note money' }, c.help.whatsappDisplay),
         h('a', { class: 'secondary', href: `mailto:${c.help.emailAddress}` }, icon('mail'), c.help.email),
         h('p', { class: 'note' }, c.help.emailAddress),
-        h('p', { class: 'note' }, t(c.help.hours)),
       ),
       h('h3', {}, c.help.faqTitle),
       faq,
     );
     dialog.addEventListener('click', (e) => e.target === dialog && dialog.close());
     // Las preguntas se arman al abrir: la de "1 tarjeta" depende de los packs de Shopify.
-    const singleCard = () => packs().some((p) => p.cards === 1);
+    const singleCard = () => singlePack() !== null;
     new MutationObserver(() => {
       if (!dialog.open) return;
       faq.replaceChildren(
@@ -531,6 +590,11 @@ export function mountApp({ root, header, flow, catalog: loadCatalog, stage }: Ap
     if (stepChanged) {
       window.scrollTo({ top: 0 });
       main.focus({ preventScroll: true });
+      const steps = stepsFor(s.intent ?? prev.intent);
+      const forward = steps.indexOf(s.step) >= steps.indexOf(prev.step);
+      main.classList.remove('enter-forward', 'enter-back');
+      void main.offsetWidth;
+      main.classList.add(forward ? 'enter-forward' : 'enter-back');
     }
   });
 

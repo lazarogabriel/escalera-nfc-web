@@ -13,6 +13,8 @@ const PATHS = {
   back: '<path d="M14.5 6 8.5 12l6 6"/>',
   help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.5a2.3 2.3 0 1 1 3.2 2.1c-.6.3-1 .8-1 1.4v.5"/><path d="M12 16.5h.01"/>',
   check: '<path d="m5.5 12.5 4 4 9-9"/>',
+  minus: '<path d="M6 12h12"/>',
+  plus: '<path d="M6 12h12M12 6v12"/>',
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
 } as const;
 

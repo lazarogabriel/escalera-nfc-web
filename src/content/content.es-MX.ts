@@ -4,24 +4,17 @@
 
 import type { Intent } from '../state/flow';
 
-const IVA = '[[FALTA: PE3 ¿Los precios incluyen IVA?]]';
-const PREPARACION = '[[FALTA: EN5 ¿Cuántos días hábiles tarda la preparación?]]';
-const ENTREGA = '[[FALTA: EN6 ¿Cuántos días tarda la entrega?]]';
-const RASTREO = '[[FALTA: EN7 ¿Siempre hay número de rastreo y por dónde llega?]]';
-const QUIEN_ESCRIBE = '[[FALTA: PR13 ¿Quién escribe primero, el comprador o ustedes?]]';
-const VIDEO = '[[FALTA: PR2b ¿Por dónde y cuándo se manda el video al revendedor?]]';
-const CAMBIO_LINK = '[[FALTA: PR6b Si el negocio cambia de link con la tarjeta bloqueada, ¿qué pasa?]]';
-const MEDIOS_ACTIVOS = '[[FALTA: PA1 ¿Ya está activo Shopify Payments con estos medios?]]';
-const FACTURA = '[[FALTA: FA1 ¿Emiten factura (CFDI)?]] [[FALTA: FA2 ¿Cómo se pide?]] [[FALTA: FA3 ¿Hasta cuándo se puede pedir?]]';
-const PLAZOS_FALLA =
-  '[[FALTA: PV1 ¿Hasta cuántos días después de recibirla se puede reportar?]] [[FALTA: PV4 ¿En cuántos días hábiles se resuelve?]]';
+const ENTREGA = 'Te llegan en 2 a 8 días hábiles.';
+const RASTREO = 'Te mandamos la guía y el número de rastreo por WhatsApp.';
+const FACTURA = 'Por el momento no emitimos factura.';
 
 const MEDIOS =
-  'Tarjeta de crédito o débito Visa, Mastercard, American Express o UnionPay. Apple Pay, Google Pay y Shop Pay. Efectivo en OXXO. Por ahora no hay meses sin intereses.';
-const ENVIO = 'Enviamos desde Morelia, Michoacán, a todo México, por FedEx o Paquetexpress.';
+  'Tarjeta de crédito o débito (Visa, Mastercard o American Express), Apple Pay o Google Pay. Se paga en una sola exhibición, sin meses sin intereses.';
+const ENVIO = 'Enviamos gratis a todo México, por FedEx o Paquetexpress.';
 const PASOS_LINK = 'En tu Perfil de Negocio de Google, entra a Leer opiniones, luego a Obtener más opiniones y selecciona Copiar.';
 const PAGO_SHOPIFY = 'El pago se hace en el checkout de Shopify. Esta página no ve ni guarda los datos de tu tarjeta.';
-const REPOSICION = 'Te la reponemos o te devolvemos tu dinero, y nosotros pagamos el envío. Escríbenos por WhatsApp.';
+const REPOSICION =
+  'Garantía de 5 años. Si una tarjeta falla, escríbenos por WhatsApp en cuanto lo notes y la resolvemos de inmediato: te la reponemos o te devolvemos tu dinero, y nosotros pagamos el envío.';
 
 export const content = {
   brand: 'Escalera NFC',
@@ -29,7 +22,7 @@ export const content = {
   meta: {
     title: 'Tarjetas NFC para reseñas de Google',
     description:
-      'Tarjeta de acrílico con chip NFC. Tu cliente la toca con su celular y se abre tu página de reseñas de Google. Envíos desde Morelia a todo México.',
+      'Tarjeta NFC para reseñas de Google. Tu cliente la toca con su celular y se abre tu página de reseñas. Envío gratis a todo México.',
   },
 
   actions: {
@@ -54,24 +47,26 @@ export const content = {
   entry: {
     title: 'Tarjeta NFC para tus reseñas de Google',
     lead: 'Tu cliente acerca su celular a la tarjeta y se abre tu página de reseñas en Google. No tiene que instalar nada.',
+    size: 'Mide 12 × 12 cm.',
     stepsTitle: 'Cómo funciona',
     steps: [
       'Pones la tarjeta en tu mostrador, mesa o entrada.',
       'Tu cliente acerca su celular a la tarjeta.',
       'Se abre tu página de reseñas de Google.',
     ],
-    specs: ['10 × 10 cm', 'Acrílico de 2 mm', 'Chip NFC NTAG 213'],
     available: 'Disponible',
     soldOut: 'Agotado',
     trust: [
       { icon: 'lock', text: 'Pagas en el checkout seguro de Shopify.' },
-      { icon: 'truck', text: 'Envío a todo México desde Morelia.' },
+      { icon: 'truck', text: 'Envío gratis a todo México.' },
       { icon: 'nfc', text: 'Para tu negocio, llega programada con tu link.' },
-      { icon: 'refresh', text: 'Si una tarjeta falla, te la reponemos.' },
+      { icon: 'refresh', text: 'Garantía de 5 años.' },
     ] as const,
-    priceFrom: 'Desde {desde} MXN por tarjeta.',
-    priceNote: `Precios en pesos mexicanos. ${IVA}`,
-    imageAlt: 'Tarjeta de acrílico de 10 × 10 cm con chip NFC para reseñas de Google.',
+    freeShipping: 'Envío gratis a todo México',
+    price: '{precio} MXN por tarjeta.',
+    resaleFrom: 'Para revender, desde {desde} MXN por tarjeta.',
+    priceNote: 'Precios en pesos mexicanos.',
+    imageAlt: 'Tarjeta NFC de 12 × 12 cm para reseñas de Google.',
   },
 
   intent: {
@@ -81,13 +76,9 @@ export const content = {
         label: 'Para mi negocio',
         description: 'Para tu mostrador, mesas o entrada. Te llegan programadas con tu link de reseñas.',
       },
-      sucursales: {
-        label: 'Para varias sucursales',
-        description: 'Cada tarjeta puede llevar el link de una sucursal distinta. Te llegan programadas.',
-      },
       reventa: {
         label: 'Para revender',
-        description: 'Te llegan sin programar, con un video para que las programes tú.',
+        description: 'Packs de 10 a 100 tarjetas sin programar, con un video para que las programes tú.',
       },
     } satisfies Record<Intent, { label: string; description: string }>,
     errorEmpty: 'Elige para qué la quieres para seguir.',
@@ -97,16 +88,23 @@ export const content = {
     title: 'Elige cuántas tarjetas',
     lead: {
       negocio: 'Cuenta los lugares donde la vas a poner: mostrador, mesas, entrada.',
-      sucursales: 'Cuenta cuántas tarjetas va a tener cada sucursal y súmalas.',
-      reventa: 'El precio es el mismo para todos. No hay precio de mayoreo.',
+      reventa: 'Mientras más grande el pack, menos cuesta cada tarjeta.',
     } satisfies Record<Intent, string>,
     oneCard: '1 tarjeta',
+    cards: '{n} tarjetas',
+    less: 'Una tarjeta menos',
+    more: 'Una tarjeta más',
+    maxNote: 'Máximo 3 tarjetas. Si necesitas más, elige Para revender.',
+    unitPrice: '{precio} MXN por tarjeta',
     total: '{total} MXN',
     perCard: '{porTarjeta} MXN por tarjeta',
+    // Margen estimado si el revendedor cobra cada tarjeta entre estos precios (dato del cliente).
+    resaleRange: { min: 350, max: 500 },
+    profit: 'Ganancia: {desde} a {hasta} MXN',
+    profitNote: 'Ganancia estimada si revendes cada tarjeta entre {min} y {max} MXN.',
     soldOut: 'Agotado',
     volumeNote: 'En los packs más grandes cada tarjeta cuesta menos.',
-    stackHeight: '{pack}: {alto} de alto',
-    priceNote: `Precios en pesos mexicanos. ${IVA} El envío se calcula al pagar, según tu dirección.`,
+    priceNote: 'Precios en pesos mexicanos. Envío gratis a todo México.',
     errorEmpty: 'Elige una cantidad para seguir.',
   },
 
@@ -116,12 +114,12 @@ export const content = {
     fieldLabel: 'Link de reseñas',
     placeholder: 'https://g.page/r/...',
     help: PASOS_LINK,
-    later: 'Lo mando por WhatsApp después de pagar',
-    warning: `Revisa que el link abra la página de reseñas de tu negocio. ${CAMBIO_LINK}`,
+    later: 'No lo tengo o quiero links distintos: escríbanme por WhatsApp',
+    warning: 'Revisa que el link abra la página de reseñas de tu negocio.',
     errors: {
-      empty: 'Pega tu link o marca que lo mandas por WhatsApp.',
+      empty: 'Pega tu link o marca que te escribamos por WhatsApp.',
       'not-google': 'Ese link no es de Google. Cópialo otra vez desde tu Perfil de Negocio.',
-      'too-long': 'Ese link es muy largo para el chip. Usa el que da Obtener más opiniones.',
+      'too-long': 'Ese link es muy largo para la tarjeta. Usa el que da Obtener más opiniones.',
     },
   },
 
@@ -131,48 +129,36 @@ export const content = {
       intent: 'Uso',
       quantity: 'Cantidad',
       link: 'Link',
-      linkLater: 'Lo mandas por WhatsApp después de pagar',
+      linkLater: 'Te escribimos por WhatsApp después de pagar',
       total: 'Total',
       shipping: 'Envío',
-      shippingValue: 'Se calcula al pagar, según tu dirección.',
+      shippingValue: 'Gratis a todo México.',
     },
-    totalNote: IVA,
     paymentTitle: 'Formas de pago',
-    paymentChips: ['Visa', 'Mastercard', 'American Express', 'UnionPay', 'Apple Pay', 'Google Pay', 'Shop Pay', 'OXXO'],
+    paymentChips: ['Visa', 'Mastercard', 'American Express', 'Apple Pay', 'Google Pay'],
     secure: 'Pago seguro en Shopify. Esta página no ve los datos de tu tarjeta.',
     nextTitle: 'Qué pasa después',
     next: {
       negocio: [
         'Al presionar Ir a pagar, pasas al pago de Shopify, en otra página.',
         'Pagas y te llega la confirmación por correo.',
-        `Si no pegaste tu link, nos lo mandas por WhatsApp. ${QUIEN_ESCRIBE}`,
-        'Programamos tus tarjetas con tu link y las bloqueamos.',
-        `Las enviamos desde Morelia por FedEx o Paquetexpress. ${PREPARACION} ${ENTREGA}`,
-      ],
-      sucursales: [
-        'Al presionar Ir a pagar, pasas al pago de Shopify, en otra página.',
-        'Pagas y te llega la confirmación por correo.',
-        `Nos mandas por WhatsApp qué link va en cada tarjeta. ${QUIEN_ESCRIBE}`,
-        'Programamos cada tarjeta con su link y las bloqueamos.',
-        `Las enviamos desde Morelia por FedEx o Paquetexpress. ${PREPARACION} ${ENTREGA}`,
+        'Te escribimos por WhatsApp para confirmar qué link va en cada tarjeta.',
+        'Programamos tus tarjetas y las bloqueamos.',
+        `Las enviamos por FedEx o Paquetexpress. ${ENTREGA} ${RASTREO}`,
       ],
       reventa: [
         'Al presionar Ir a pagar, pasas al pago de Shopify, en otra página.',
         'Pagas y te llega la confirmación por correo.',
-        `Te mandamos el video para programarlas. ${VIDEO}`,
-        `Las enviamos sin programar y sin bloquear, desde Morelia, por FedEx o Paquetexpress. ${PREPARACION} ${ENTREGA}`,
+        'Te mandamos por WhatsApp el video para programarlas con la app NFC Tools.',
+        `Las enviamos sin programar y sin bloquear, por FedEx o Paquetexpress. ${ENTREGA} ${RASTREO}`,
       ],
     } satisfies Record<Intent, string[]>,
     blocks: [
       { title: 'Pagas en Shopify', body: PAGO_SHOPIFY },
-      { title: 'Formas de pago', body: `${MEDIOS} ${MEDIOS_ACTIVOS}` },
-      {
-        title: 'Efectivo en OXXO',
-        body: 'Con OXXO recibes un voucher para pagar en efectivo. [[FALTA: PA3 ¿Cuántos días dura el voucher y cuándo se prepara el pedido?]]',
-      },
-      { title: 'Envío', body: `${ENVIO} El costo lo ves en el checkout antes de pagar. ${RASTREO}` },
+      { title: 'Formas de pago', body: MEDIOS },
+      { title: 'Envío', body: `${ENVIO} ${ENTREGA} ${RASTREO}` },
       { title: 'Factura', body: FACTURA },
-      { title: 'Si una tarjeta falla', body: `${REPOSICION} ${PLAZOS_FALLA}` },
+      { title: 'Si una tarjeta falla', body: REPOSICION },
     ],
     policies: {
       privacyPolicy: 'Política de privacidad',
@@ -182,7 +168,7 @@ export const content = {
     },
     policiesPending:
       '[[FALTA: PV6 Crear en Shopify las políticas de reembolso, envío y términos del servicio]]',
-    payNote: 'Te llevamos al checkout de Shopify. Ahí pones tu dirección y ves el costo de envío antes de pagar.',
+    payNote: 'Te llevamos al checkout de Shopify. Ahí pones tu dirección de entrega.',
     soldOut: 'Este pack se agotó. Elige otra cantidad.',
   },
 
@@ -197,7 +183,6 @@ export const content = {
     whatsappDisplay: '+52 228 646 1167',
     email: 'Escribir un correo',
     emailAddress: 'packoescalerashopify@gmail.com',
-    hours: '[[FALTA: NE4b ¿En qué horario contestan el WhatsApp?]]',
     faqTitle: 'Preguntas frecuentes',
   },
 
@@ -210,30 +195,29 @@ export const content = {
     { q: '¿Mi cliente tiene que instalar una app?', a: 'No. El celular abre el link sin instalar nada.' },
     {
       q: '¿Las tarjetas llegan listas para usar?',
-      a: 'Si las compras para tu negocio o para tus sucursales, sí: llegan programadas con tu link y bloqueadas. Si las compras para revender, llegan en blanco y te mandamos un video para programarlas. [[FALTA: PR2c ¿Qué app se usa para programarlas?]]',
+      a: 'Si las compras para tu negocio, sí: llegan programadas con tu link y bloqueadas. Si las compras para revender, llegan en blanco y te mandamos por WhatsApp un video para programarlas con la app NFC Tools.',
     },
-    { q: '¿Dónde consigo mi link de reseñas?', a: PASOS_LINK },
+    { q: '¿Dónde consigo mi link de reseñas?', a: `${PASOS_LINK} Si no lo encuentras, después de pagar te escribimos por WhatsApp y te ayudamos.` },
     {
       q: '¿Puedo poner un link distinto en cada tarjeta?',
-      a: 'Sí. Elige Para varias sucursales y, después de pagar, mándanos por WhatsApp qué link va en cada tarjeta.',
+      a: 'Sí, por ejemplo si tienes varias sucursales. Después de pagar te escribimos por WhatsApp para saber qué link va en cada tarjeta.',
     },
-    { q: '¿Puedo cambiar el link después?', a: CAMBIO_LINK },
-    // Solo se muestra si existe un pack de 1 tarjeta en Shopify.
-    { q: '¿Puedo comprar una sola tarjeta?', a: 'Sí. Elige 1 tarjeta en la cantidad.', requiresSingleCard: true },
-    { q: '¿Cómo puedo pagar?', a: `${MEDIOS} ${MEDIOS_ACTIVOS}` },
+    // Solo se muestra si existe la variante de 1 tarjeta en Shopify.
+    { q: '¿Puedo comprar una sola tarjeta?', a: 'Sí. Elige Para mi negocio y con + y − eliges cuántas quieres.', requiresSingleCard: true },
+    { q: '¿Cómo puedo pagar?', a: MEDIOS },
     { q: '¿Es seguro pagar?', a: PAGO_SHOPIFY },
-    { q: '¿Cuánto cuesta el envío?', a: `Lo calcula Shopify al pagar, según tu dirección. No hay envío gratis. ${ENVIO}` },
-    { q: '¿Cuánto tarda en llegar?', a: `${PREPARACION} ${ENTREGA}` },
-    { q: '¿Puedo rastrear mi pedido?', a: RASTREO },
+    { q: '¿Cuánto cuesta el envío?', a: ENVIO },
+    { q: '¿Cuánto tarda en llegar?', a: 'De 2 a 8 días hábiles.' },
+    { q: '¿Puedo rastrear mi pedido?', a: `Sí. ${RASTREO}` },
     { q: '¿Dan factura?', a: FACTURA },
-    { q: '¿Qué pasa si una tarjeta no funciona?', a: `${REPOSICION} ${PLAZOS_FALLA}` },
+    { q: '¿Qué pasa si una tarjeta no funciona?', a: REPOSICION },
     {
       q: '¿Aceptan cambios o devoluciones?',
-      a: 'Solo si la tarjeta llega con falla. [[FALTA: PV7 Revisar con un asesor la política sin cambios ni devoluciones frente a la LFPC]]',
+      a: 'No hay cambios ni devoluciones, salvo que la tarjeta tenga un error de fabricación.',
     },
     {
       q: '¿Hay precio especial para revendedores?',
-      a: 'No. El precio es el mismo para todos. Las tarjetas llevan un solo diseño, sin marca blanca.',
+      a: 'Sí. Para revender se venden packs, y mientras más grande el pack, menos cuesta cada tarjeta. Llevan un solo diseño, sin marca blanca.',
     },
     {
       q: '¿La tarjeta me asegura más reseñas?',

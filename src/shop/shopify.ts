@@ -135,13 +135,24 @@ export interface CheckoutAttributes {
   link_por_whatsapp?: string;
 }
 
-/** Cart permalink: https://{dominio}/cart/{variantId}:1?attributes[clave]=valor */
-export function buildCheckoutUrl(pack: Pack, attributes: CheckoutAttributes): string {
-  const query = Object.entries(attributes)
+/**
+ * Además de los atributos, arma una nota legible ("note" del cart permalink) para que el link de reseñas
+ * se vea de entrada en el pedido de Shopify, sin tener que abrir el detalle de los atributos.
+ */
+function buildOrderNote(attributes: CheckoutAttributes): string {
+  const lines = [`Uso: ${attributes.intencion}`];
+  if (attributes.link_google) lines.push(`Link de reseñas: ${attributes.link_google}`);
+  if (attributes.link_por_whatsapp) lines.push('No puso link: escribirle por WhatsApp para saber qué link va en cada tarjeta.');
+  return lines.join('\n');
+}
+
+/** Cart permalink: https://{dominio}/cart/{variantId}:{cantidad}?attributes[clave]=valor&note=... */
+export function buildCheckoutUrl(pack: Pack, quantity: number, attributes: CheckoutAttributes): string {
+  const params = Object.entries(attributes)
     .filter(([, value]) => value)
-    .map(([key, value]) => `attributes[${key}]=${encodeURIComponent(value!)}`)
-    .join('&');
-  return `https://${DOMAIN}/cart/${pack.variantId}:1${query ? `?${query}` : ''}`;
+    .map(([key, value]) => `attributes[${key}]=${encodeURIComponent(value!)}`);
+  params.push(`note=${encodeURIComponent(buildOrderNote(attributes))}`);
+  return `https://${DOMAIN}/cart/${pack.variantId}:${quantity}?${params.join('&')}`;
 }
 
 export function pricePerCard(pack: Pack): number {

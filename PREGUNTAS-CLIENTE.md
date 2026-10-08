@@ -1,47 +1,50 @@
-# Preguntas pendientes para el cliente
+# Preguntas para el cliente
 
-Cada respuesta reemplaza un aviso "Falta responder" en la página. El código entre paréntesis es el mismo que aparece en la página y en `CONTENT.md`.
+Todas las preguntas quedaron respondidas el 2026-10-08. Lo único que falta antes de publicar son las tareas en Shopify de abajo.
 
-## Hay que responder antes de publicar
+## Respuestas (2026-10-08)
 
-### Negocio
-- (NE1) Respondido: la marca es "Escalera NFC". Confirmar que así va también en el checkout (hoy la tienda de Shopify se llama "Tarjetas NFC").
-- (NE4b) ¿En qué horario contestan el WhatsApp?
+| Código | Respuesta |
+|---|---|
+| NE1 | La marca es "Escalera NFC". |
+| NE4b | Eliminado: no se muestra horario de WhatsApp. |
+| PE3 | Eliminado: no se menciona el IVA. |
+| PA1 | Tarjeta de crédito o débito, Apple Pay y Google Pay. Un solo pago, sin meses sin intereses. Sin OXXO, Shop Pay ni UnionPay. |
+| PA3 | Eliminado (no hay OXXO). |
+| PR2b | El video al revendedor se manda por WhatsApp. |
+| PR2c | Se programan con la app NFC Tools. |
+| PR6b | Eliminado: no se habla de cambiar el link. |
+| PR13 | Ellos le escriben al comprador por WhatsApp para saber qué link va en cada tarjeta. |
+| PR14 | Eliminado: el arte se queda como está. |
+| EN5 | Eliminado: no se da plazo de preparación aparte. |
+| EN6 | Entrega en 2 a 8 días hábiles. |
+| EN7 | La guía y el número de rastreo se mandan por WhatsApp. |
+| FA1 | Por el momento no emiten factura (FA2 y FA3 eliminados). |
+| PV1, PV4 | Garantía de 5 años; una falla se reporta y se resuelve de inmediato. |
+| PV7 | No hay cambios ni devoluciones, salvo error de fabricación. |
+| Sucursales | Eliminada la opción "Para varias sucursales". Quien tenga varias compra como negocio y le escriben por WhatsApp para saber qué link va en cada tarjeta. |
+| Medidas | 12 × 12 cm. No se mencionan acrílico ni chip. |
+| Envío | Gratis a todo México. |
 
-### Precios
-- (PE3) ¿Los precios incluyen IVA?
+**Aviso sobre PV7:** la Ley Federal de Protección al Consumidor da cinco días hábiles para cancelar una compra a distancia (artículo 56). Conviene que un asesor revise el "sin cambios ni devoluciones". No es asesoría legal.
 
-### Pago
-- (PA1) ¿Ya está aprobado Shopify Payments? Hoy la tienda no muestra ningún medio de pago activo. La idea es activar todos los que Shopify permite en México: tarjeta de crédito y débito (Visa, Mastercard, American Express, UnionPay), Apple Pay, Google Pay, Shop Pay y efectivo en OXXO. Meses sin intereses quedan apagados por ahora.
-- (PA3) ¿Cuántos días tiene el cliente para pagar el voucher de OXXO? ¿El pedido se prepara recién cuando se acredita el pago?
+## Precios
 
-### Producto
-- (PR2b) Al revendedor, ¿por dónde y cuándo se le manda el video tutorial? ¿Por WhatsApp, al confirmar el pago?
-- (PR2c) ¿Qué app se usa para programar las tarjetas en el video?
-- (PR6b) Las tarjetas del consumidor final llegan bloqueadas, y una tarjeta bloqueada ya no se puede reprogramar. Si un negocio cambia de link, ¿qué pasa? ¿Se le manda una tarjeta nueva? ¿Con qué costo?
-- (PR13) Para varias sucursales, ¿después de pagar el cliente les escribe con los links o ustedes le escriben a él? Lo mismo para quien compra para su negocio y no puso su link en la página.
-- (PR14) El arte de la tarjeta dice "Dejanos una reseña" y "Apoyá tu celular o escaneá". Es voseo argentino; en México se diría "Déjanos una reseña" y "Acerca tu celular". Además dice "escaneá", pero la tarjeta no lleva QR (PR7). ¿Se corrige el arte antes de imprimir?
+- **Para mi negocio:** $449 MXN por tarjeta. En la página se eligen con + y − (máximo 3). 1 tarjeta $449, 2 tarjetas $898, 3 tarjetas $1,347.
+- **Para revender (packs):** 10 tarjetas $1,590 ($159 c/u), 30 tarjetas $4,470 ($149 c/u), 50 tarjetas $6,950 ($139 c/u) y 100 tarjetas $12,900 ($129 c/u).
+- La página muestra la ganancia estimada de cada pack si se revende cada tarjeta entre $350 y $500. La calcula con los precios de Shopify; si cambia un precio, la ganancia se actualiza sola.
 
-### Envío
-- (EN5) ¿Cuántos días hábiles tardan en preparar y programar un pedido?
-- (EN6) ¿Cuántos días tarda la paquetería en entregar? Puede ser un rango, por ejemplo de 3 a 6 días hábiles.
-- (EN7) ¿Siempre se manda número de rastreo? ¿Por dónde: correo, WhatsApp o Shopify?
+## Tareas en Shopify (bloquean la publicación)
 
-### Factura
-- (FA1) ¿Emiten factura (CFDI)?
-- (FA2) ¿Cómo se pide: correo, WhatsApp o un campo en el checkout?
-- (FA3) ¿Hasta cuántos días después de la compra se puede pedir?
-
-### Postventa
-- (PV1) Si una tarjeta no funciona, ¿hasta cuántos días después de recibirla se puede reportar?
-- (PV4) ¿En cuántos días hábiles resuelven la reposición o el reembolso?
-- (PV7) "Sin cambios ni devoluciones": conviene que lo revise un asesor antes de publicarlo. La Ley Federal de Protección al Consumidor tiene reglas para ventas a distancia (artículo 56, cinco días hábiles para cancelar) y para la garantía mínima. No es asesoría legal; es un aviso para que lo revisen.
-
-## Tareas en Shopify (no son preguntas)
-
-- Cargar los precios finales de cada pack. La página los lee de Shopify tal cual.
-- Crear la variante "1 tarjeta", porque sí se vende una sola unidad.
-- Corregir el peso de cada variante: hoy los cuatro packs dicen 40 g y con eso el envío sale mal calculado. A 40 g por tarjeta serían 1 tarjeta 40 g, 10 tarjetas 400 g, 20 tarjetas 800 g, 50 tarjetas 2 kg y 100 tarjetas 4 kg, más el empaque.
-- Configurar las tarifas de envío para FedEx o Paquetexpress, sin envío gratis.
-- Crear las políticas de reembolso, envío y términos del servicio. Hoy solo existe la de privacidad.
+- Dejar las variantes del producto `tarjetas-nfc` así: **1 tarjeta** $449, **10 tarjetas** $1,590, **30 tarjetas** $4,470, **50 tarjetas** $6,950 y **100 tarjetas** $12,900. Borrar la de 20 tarjetas. El título de cada variante tiene que empezar con el número, porque la página lee de ahí la cantidad. Hoy no existe la de 1 tarjeta, así que "Para mi negocio" aparece como no disponible hasta que se cree.
+- Después de cambiar las variantes, correr `npm run update:fallback` para actualizar el respaldo de precios.
+- Corregir el peso de cada variante: 40 g por tarjeta (1 tarjeta 40 g, 10 tarjetas 400 g, 30 tarjetas 1.2 kg, 50 tarjetas 2 kg, 100 tarjetas 4 kg), más el empaque.
+- Configurar el envío gratis a todo México.
+- Activar Shopify Payments con tarjeta de crédito y débito, Apple Pay y Google Pay. Dejar apagados OXXO y los meses sin intereses.
+- Pedir el teléfono como obligatorio en el checkout (Configuración → Checkout → Información de contacto). Sin ese dato no pueden escribirle al comprador por WhatsApp para pedirle el link ni mandarle el rastreo.
+- (PV6) Crear las políticas de reembolso, envío y términos del servicio. Hoy solo existe la de privacidad. Es el único aviso "Falta responder" que queda en la página.
 - Cambiar el nombre de la tienda a "Escalera NFC" (NE1).
+
+## Dónde ver el link de reseñas de cada pedido
+
+En el admin de Shopify → Pedidos → abrir el pedido. Arriba, en "Notas", aparece el uso ("Para mi negocio" o "Para revender") y el link de reseñas, o el aviso de que hay que escribirle por WhatsApp. Más abajo, en "Detalles adicionales", están los mismos datos por separado.
